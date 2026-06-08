@@ -1720,11 +1720,15 @@ conditional DDIM imputation backbone and self-masking training routine.
 Categorical features are embedded through feature-specific embedding
 matrices and mapped to simplex representations. A lightweight
 feature-attention encoder predicts logits for the LPDD reverse transition,
-ensuring simplex-preserving updates at each timestep. The LPDD design is
-inspired by the latent information pathway of Loopholing discrete
-diffusion~\cite{loopholing}, but it is implemented as a feature-wise tabular
-adaptation rather than by directly reusing the language-model architecture of
-existing LDDM codebases.
+ensuring simplex-preserving updates at each timestep. The LPDD channel is
+adapted from the public Loopholing discrete diffusion implementation
+(\url{https://github.com/ahn-ml/lddm})~\cite{loopholing}. In the original
+implementation, the latent pathway is coupled with a DiT backbone for
+language-token generation. In MissHDD, we retain the latent-path update and
+loophole-style propagation of distributional information, but replace the
+tokenizer/DiT language backbone with a feature-wise tabular encoder and
+condition all updates on observed values, missingness masks, and the current
+continuous-channel estimates.
 
 \textbf{Training.}
 Both channels are trained jointly using the objective in
