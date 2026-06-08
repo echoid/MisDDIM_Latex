@@ -1,0 +1,53 @@
+\begin{tikzpicture}[
+  treatment line/.style={rounded corners=1.5pt, line cap=round, shorten >=1pt},
+  treatment label/.style={font=\small},
+  group line/.style={ultra thick},
+]
+
+\begin{axis}[
+  clip={false},
+  axis x line={center},
+  axis y line={none},
+  axis line style={-},
+  xmin={1},
+  ymax={0},
+  scale only axis={true},
+  width={\axisdefaultwidth},
+  ticklabel style={anchor=south, yshift=1.3*\pgfkeysvalueof{/pgfplots/major tick length}, font=\small},
+  every tick/.style={draw=black},
+  major tick style={yshift=.5*\pgfkeysvalueof{/pgfplots/major tick length}},
+  minor tick style={yshift=.5*\pgfkeysvalueof{/pgfplots/minor tick length}},
+  title style={yshift=\baselineskip},
+  xmax={9},
+  ymin={-5.5},
+  height={6\baselineskip},
+  xtick={1,3,5,7,9},
+  minor x tick num={1},
+  x dir={reverse},
+  title={Pooled downstream ranks},
+]
+
+\draw[treatment line] ([yshift=-2pt] axis cs:1.5555555555555556, 0) |- (axis cs:0.8055555555555556, -2.5)
+  node[treatment label, anchor=west] {MissHDD};
+\draw[treatment line] ([yshift=-2pt] axis cs:2.2777777777777777, 0) |- (axis cs:0.8055555555555556, -3.5)
+  node[treatment label, anchor=west] {TabCSDI};
+\draw[treatment line] ([yshift=-2pt] axis cs:4.013888888888889, 0) |- (axis cs:0.8055555555555556, -4.5)
+  node[treatment label, anchor=west] {MissDiff};
+\draw[treatment line] ([yshift=-2pt] axis cs:4.416666666666667, 0) |- (axis cs:0.8055555555555556, -5.5)
+  node[treatment label, anchor=west] {CSDI};
+\draw[treatment line] ([yshift=-2pt] axis cs:6.041666666666667, 0) |- (axis cs:8.152777777777779, -6.0)
+  node[treatment label, anchor=east] {MIWAE};
+\draw[treatment line] ([yshift=-2pt] axis cs:6.208333333333333, 0) |- (axis cs:8.152777777777779, -5.0)
+  node[treatment label, anchor=east] {MissForest};
+\draw[treatment line] ([yshift=-2pt] axis cs:6.402777777777778, 0) |- (axis cs:8.152777777777779, -4.0)
+  node[treatment label, anchor=east] {MICE};
+\draw[treatment line] ([yshift=-2pt] axis cs:6.680555555555555, 0) |- (axis cs:8.152777777777779, -3.0)
+  node[treatment label, anchor=east] {GAIN};
+\draw[treatment line] ([yshift=-2pt] axis cs:7.402777777777778, 0) |- (axis cs:8.152777777777779, -2.0)
+  node[treatment label, anchor=east] {Mean};
+\draw[group line] (axis cs:4.013888888888889, -3.0) -- (axis cs:4.416666666666667, -3.0);
+\draw[group line] (axis cs:6.041666666666667, -2.0) -- (axis cs:6.680555555555555, -2.0);
+\draw[group line] (axis cs:6.208333333333333, -1.3333333333333333) -- (axis cs:7.402777777777778, -1.3333333333333333);
+
+\end{axis}
+\end{tikzpicture}

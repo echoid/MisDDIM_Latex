@@ -1990,7 +1990,7 @@ median error and smaller variance.
 \begin{table*}[!t]
 \centering
 \caption{
-Results on \textbf{Dataset Category 1}. We report classification performance using F1 Score~($\uparrow$) under $30\%$, $50\%$, and $70\%$ missingness as mean $\pm$ standard deviation over five-fold cross-validation. The best score for each setting is highlighted using \best{bold}, and the second-best score is marked using \secondbest{underline}.
+Category~1 classification F1~($\uparrow$) under $30\%$, $50\%$, and $70\%$ missingness, reported as mean $\pm$ standard deviation over five-fold cross-validation. \best{Bold} and \secondbest{underline} mark the best and second-best scores.
 }
 \label{tab:classification_results}
 \resizebox{\textwidth}{!}{
@@ -2042,7 +2042,7 @@ MissHDD & \best{\meanstd{0.7873}{0.0008}} & \best{\meanstd{0.7524}{0.0014}} & \m
 \begin{table*}[!t]
 \centering
 \caption{
-Results on \textbf{Dataset Category 1}. We report regression performance using MAE~($\downarrow$) under $30\%$, $50\%$, and $70\%$ missingness as mean $\pm$ standard deviation over five-fold cross-validation. The best score for each setting is highlighted using \best{bold}, and the second-best score is marked using \secondbest{underline}.
+Category~1 regression MAE~($\downarrow$) under $30\%$, $50\%$, and $70\%$ missingness, reported as mean $\pm$ standard deviation over five-fold cross-validation. \best{Bold} and \secondbest{underline} mark the best and second-best scores.
 }
 \label{tab:regression_results}
 \resizebox{\textwidth}{!}{
@@ -2094,7 +2094,7 @@ MissHDD & \best{\meanstd{0.4907}{0.0015}} & \meanstd{0.6422}{0.0018} & \best{\me
 \begin{table*}[!ht]
 \centering
 \caption{
-Results on \textbf{Dataset Category 2}. We report clustering performance using NMI~($\uparrow$) and classification performance using Accuracy~($\uparrow$) on naturally incomplete datasets as mean $\pm$ standard deviation over five-fold cross-validation. The best score for each dataset is highlighted using \best{bold}, and the second-best score is marked using \secondbest{underline}.
+Category~2 naturally incomplete datasets: Accuracy and NMI~($\uparrow$), reported as mean $\pm$ standard deviation over five-fold cross-validation. \best{Bold} and \secondbest{underline} mark the best and second-best scores.
 }
 \label{tab:incomplete_data}
 \resizebox{\textwidth}{!}{
@@ -2157,60 +2157,26 @@ MissHDD remains consistently competitive.
 
 \subsection{Statistical comparison}
 
-To complement the cell-wise mean and standard deviation reports in
-Tables~\ref{tab:classification_results}, \ref{tab:regression_results},
-and~\ref{tab:incomplete_data}, we conduct a rank-based comparison across
-methods. For Tables~\ref{tab:classification_results}
-and~\ref{tab:regression_results}, each dataset--missing-rate pair is treated
-as one paired evaluation unit, yielding 12 units for F1 and 12 units for MAE.
-For Table~\ref{tab:incomplete_data}, ACC and NMI are analysed separately over
-the six naturally incomplete datasets. Methods are ranked within each unit
-according to the corresponding metric direction, and we summarize the results
-using average ranks and Holm-adjusted critical-difference diagrams generated
-with \texttt{critdd}.
+To complement the mean and standard-deviation reports, we perform a pooled
+rank-based comparison over all downstream evaluation units: 12 F1 units, 12
+MAE units, and six ACC plus six NMI units. Methods are ranked within each unit
+according to metric direction, and average ranks are compared using
+\texttt{critdd} with Holm adjustment.
 
-Figure~\ref{fig:cd_downstream} shows that MissHDD obtains the best average
-rank on all four downstream comparisons: 1.50 for F1, 1.58 for MAE, 1.75 for
-ACC, and 1.42 for NMI. TabCSDI is the closest competing method in all four
-cases. The Holm-adjusted grouping indicates clear separation between the
-top-ranked diffusion methods and weaker baselines for the Category~1 F1 and
-MAE comparisons, whereas the Category~2 ACC/NMI comparisons show broader
-overlap because they contain only six naturally incomplete datasets and smaller
-performance gaps. We therefore interpret the Category~2 results as evidence of
-competitive and stable performance rather than strong statistical separation.
+Figure~\ref{fig:cd_downstream} shows that MissHDD obtains the best pooled
+average rank (1.56), followed by TabCSDI (2.28), MissDiff (4.01), and CSDI
+(4.42). The metric-specific ranks are also consistent: MissHDD ranks first on
+F1, MAE, ACC, and NMI. The pooled CD diagram therefore summarizes the overall
+downstream trend while retaining the paired rank-based statistical comparison.
 
-\begin{figure*}[!t]
+\begin{figure}[!t]
 \centering
-\begin{subfigure}{0.48\textwidth}
-\centering
-\resizebox{\linewidth}{!}{\input{outputs/cd_plots/table2_f1_cd.tex}}
-\caption{F1 on Category~1 classification datasets.}
-\end{subfigure}
-\hfill
-\begin{subfigure}{0.48\textwidth}
-\centering
-\resizebox{\linewidth}{!}{\input{outputs/cd_plots/table3_mae_cd.tex}}
-\caption{MAE on Category~1 regression datasets.}
-\end{subfigure}
-
-\vspace{0.6em}
-
-\begin{subfigure}{0.48\textwidth}
-\centering
-\resizebox{\linewidth}{!}{\input{outputs/cd_plots/table4_acc_cd.tex}}
-\caption{ACC on naturally incomplete datasets.}
-\end{subfigure}
-\hfill
-\begin{subfigure}{0.48\textwidth}
-\centering
-\resizebox{\linewidth}{!}{\input{outputs/cd_plots/table4_nmi_cd.tex}}
-\caption{NMI on naturally incomplete datasets.}
-\end{subfigure}
-\caption{Average-rank critical-difference diagrams for downstream task
-utility. Lower rank is better. Horizontal bars connect methods that are not
-separated under the Holm-adjusted post-hoc comparison at $\alpha=0.05$.}
+\resizebox{0.92\textwidth}{!}{\input{outputs/cd_plots/downstream_pooled_cd.tex}}
+\caption{Pooled average-rank critical-difference diagram over all downstream
+evaluation units. Lower rank is better; horizontal bars indicate methods not
+separated by the Holm-adjusted comparison at $\alpha=0.05$.}
 \label{fig:cd_downstream}
-\end{figure*}
+\end{figure}
 
 
 
