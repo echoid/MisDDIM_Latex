@@ -1359,17 +1359,25 @@ independent imputations, ensuring that cross-type dependencies are preserved.
 \caption{MissHDD joint training with self-masking}
 \label{alg:training}
 \begin{algorithmic}[1]
-\Require Incomplete sample $\mathbf{x}$, original mask $\mathbf{m}$, self-mask ratio $\rho$, diffusion steps $T$
-\State Sample an auxiliary mask $\tilde{\mathbf{m}}$ from observed entries with ratio $\rho$
-\State Form the effective training mask $\mathbf{m}_{\mathrm{train}}=\mathbf{m}\lor\tilde{\mathbf{m}}$
-\State Split masked targets into continuous coordinates $\mathbf{x}^{\mathrm{cont}}_0$ and categorical one-hot targets $\mathbf{p}^{\mathrm{cat}}_0$
-\State Sample $t\sim\mathrm{Uniform}(\{1,\ldots,T\})$
-\State Corrupt missing continuous coordinates with Gaussian DDIM/DDPM noise
-\State Corrupt missing categorical coordinates with the LPDD simplex forward kernel
-\State Build the shared context $\mathbf{z}_t$ from observed values, masks, current continuous states, categorical simplex states, and timestep embedding
-\State Predict continuous noise $\epsilon_\theta$ and categorical logits $\boldsymbol{\ell}_t$
-\State Compute $\mathcal{L}_{\mathrm{MissHDD}}=\mathcal{L}_{\mathrm{cont}}+\lambda_{\mathrm{cat}}\mathcal{L}_{\mathrm{cat}}$
-\State Update shared encoder and channel-specific heads by backpropagation
+\Require Mini-batch $\mathcal{B}=\{(\mathbf{x}_i,\mathbf{m}_i)\}$, self-mask ratio $\rho$, steps $T$
+\Require Parameters $\theta=\{\theta_{\mathrm{sh}},\theta_{\mathrm{cont}},\theta_{\mathrm{cat}}\}$
+\For{each mini-batch $\mathcal{B}$}
+    \ForAll{$(\mathbf{x},\mathbf{m})\in\mathcal{B}$}
+        \State $\tilde{\mathbf{m}}\sim\mathrm{Mask}(\mathbf{1}-\mathbf{m};\rho)$
+        \State $\mathbf{m}_{\mathrm{train}}\gets \mathbf{m}\lor\tilde{\mathbf{m}}$
+        \State $t\sim\mathrm{Uniform}(\{1,\ldots,T\})$
+        \State $\mathbf{x}^{\mathrm{cont}}_t\gets q_{\mathrm{cont}}(\mathbf{x}^{\mathrm{cont}}_0,t,\mathbf{m}_{\mathrm{train}})$
+        \State $\mathbf{p}^{\mathrm{cat}}_t\gets q_{\mathrm{cat}}(\mathbf{p}^{\mathrm{cat}}_0,t,\mathbf{m}_{\mathrm{train}})$
+        \State $\mathbf{z}_t\gets f_{\theta_{\mathrm{sh}}}(\mathbf{x}^{\mathrm{obs}},\mathbf{m}_{\mathrm{train}},
+        \mathbf{x}^{\mathrm{cont}}_t,\mathbf{p}^{\mathrm{cat}}_t,t)$
+        \State $\hat{\boldsymbol{\epsilon}}\gets g_{\theta_{\mathrm{cont}}}(\mathbf{z}_t)$;\quad
+        $\hat{\boldsymbol{\ell}}\gets h_{\theta_{\mathrm{cat}}}(\mathbf{z}_t)$
+    \EndFor
+    \State $\mathcal{L}\gets \mathcal{L}_{\mathrm{cont}}(\hat{\boldsymbol{\epsilon}},\boldsymbol{\epsilon})
+    +\lambda_{\mathrm{cat}}\mathcal{L}_{\mathrm{cat}}(\hat{\boldsymbol{\ell}},\mathbf{p}^{\mathrm{cat}}_0)$
+    \State $\theta\gets\mathrm{AdamW}(\theta,\nabla_\theta\mathcal{L})$
+\EndFor
+\State \Return $\theta$
 \end{algorithmic}
 \end{algorithm}
 
@@ -1377,16 +1385,23 @@ independent imputations, ensuring that cross-type dependencies are preserved.
 \caption{MissHDD deterministic inference}
 \label{alg:inference}
 \begin{algorithmic}[1]
-\Require Incomplete sample $\mathbf{x}^{\mathrm{obs}}$, mask $\mathbf{m}$, inference schedule $\{\tau_s\}_{s=S}^{0}$
-\State Initialise missing continuous coordinates with Gaussian noise
-\State Initialise missing categorical variables with uniform simplex states
+\Require Incomplete input $\mathbf{x}^{\mathrm{obs}}$, mask $\mathbf{m}$, schedule $\tau_S>\cdots>\tau_0=0$
+\State $\mathbf{x}^{\mathrm{cont}}_{\tau_S}\sim\mathcal{N}(\mathbf{0},\mathbf{I})$ on missing continuous entries
+\State $\mathbf{p}^{(j)}_{\tau_S}\gets\mathbf{u}^{(j)}$ for each missing categorical feature $j$
 \For{$s=S,\ldots,1$}
-\State Build $\mathbf{z}_{\tau_s}$ from observed values and the latest continuous/categorical estimates
-\State Update missing continuous coordinates using the deterministic DDIM rule with $\eta=0$
-\State Compute categorical logits and update each missing categorical simplex using Eq.~\eqref{eq:lpdd_reverse}
+    \State $\mathbf{z}_{\tau_s}\gets f_{\theta_{\mathrm{sh}}}(\mathbf{x}^{\mathrm{obs}},\mathbf{m},
+    \mathbf{x}^{\mathrm{cont}}_{\tau_s},\mathbf{p}^{\mathrm{cat}}_{\tau_s},\tau_s)$
+    \State $\mathbf{x}^{\mathrm{cont}}_{\tau_{s-1}}\gets
+    \mathrm{DDIM}_{\eta=0}(\mathbf{x}^{\mathrm{cont}}_{\tau_s},g_{\theta_{\mathrm{cont}}}(\mathbf{z}_{\tau_s}))$
+    \ForAll{missing categorical features $j$}
+        \State $\boldsymbol{\ell}^{(j)}_{\tau_s}\gets h_{\theta_{\mathrm{cat}}}^{(j)}(\mathbf{z}_{\tau_s})$
+        \State $\mathbf{p}^{(j)}_{\tau_{s-1}}\gets
+        \Pi_\Delta\!\left(\exp(\boldsymbol{\ell}^{(j)}_{\tau_s})
+        \odot\big((1-\beta_{\tau_s})\mathbf{p}^{(j)}_{\tau_s}+\beta_{\tau_s}\mathbf{u}^{(j)}\big)\right)$
+    \EndFor
 \EndFor
-\State Decode continuous estimates and assign categorical values by $\arg\max_k[\mathbf{p}_0^{(j)}]_k$
-\State Merge observed and imputed entries in the original feature order
+\State $\hat{x}^{(j)}_{\mathrm{cat}}\gets \arg\max_k[\mathbf{p}^{(j)}_{0}]_k$
+\State \Return $\mathrm{Merge}(\mathbf{x}^{\mathrm{obs}},\mathbf{x}^{\mathrm{cont}}_0,\hat{\mathbf{x}}^{\mathrm{cat}},\mathbf{m})$
 \end{algorithmic}
 \end{algorithm}
 
