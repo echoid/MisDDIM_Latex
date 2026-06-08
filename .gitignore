@@ -1,0 +1,18 @@
+node_modules/
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+
+# Keep generated CD plot TeX files used by main.tex, ignore other local outputs.
+outputs/*
+!outputs/cd_plots/
+!outputs/cd_plots/*.tex
+
+outputs/table_2_4_std_template/
+
