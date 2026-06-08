@@ -632,7 +632,7 @@ introduce latency and variability that conflict with the stability and
 reproducibility required for imputation. Deterministic DDIM~\cite{ddim,missddim} trajectories
 address these limitations by replacing stochastic reverse transitions with
 non-Markovian updates that preserve reconstruction quality while eliminating
-sampling noise (See Figure \ref{fig:ddim_wrap}). Building on this idea, MissHDD employs a conditional DDIM
+sampling noise (see Figure~\ref{fig:ddim_wrap}). Building on this idea, MissHDD employs a conditional DDIM
 formulation that reconstructs only the missing numerical coordinates while
 conditioning all denoising steps on the observed ones.
 \begin{wrapfigure}{r}{0.48\textwidth}
@@ -1239,9 +1239,8 @@ At $t=0$, the model produces a discrete imputation via
 \[
 x^{(j)}_{\text{imp}} = \arg\max_k [\mathbf{p}_0^{(j)}]_k,
 \]
-which is a constant-time operation. As a result, the LPDD channel introduces
-essentially no additional inference cost, and the overall sampling speed of
-MissHDD remains comparable to a single-channel DDIM model.
+which is a constant-time decoding step. Thus final categorical decoding adds
+negligible cost relative to the reverse updates.
 
 
 
@@ -1549,8 +1548,8 @@ categorical representations.
 \paragraph{Diffusion-based Models}
 We evaluate three diffusion-based imputers: \texttt{CSDI}~\cite{csdi}, its
 tabular extension \texttt{TabCSDI}~\cite{tabcsdi}, and \texttt{MissDiff}~\cite{missdiff}.
-All diffusion baselines use stochastic DDPM sampling with $T{=}100$ reverse
-steps and 100 samples per instance, aggregated by the median. \texttt{MissHDD}
+Diffusion baselines use their reported/default reverse schedules with 100
+stochastic samples per instance, aggregated by the median. \texttt{MissHDD}
 uses deterministic one-pass imputation through its continuous DDIM and LPDD
 channels.
 
@@ -1663,7 +1662,7 @@ M_{j,i}\,\mathbb{I}(x_{j,i} \neq \hat{x}_{j,i}),
 \]
 where \(\mathbb{I}(\cdot)\) is the indicator function.
 
-\paragraph{Imp Err}
+\paragraph{ImpErr}
 To aggregate continuous and categorical errors into a single measure while
 preserving the heterogeneous dimensionality of the feature space, we define
 the Mixed Imputation Error (ImpErr) as a dimension-weighted combination:
@@ -1765,10 +1764,8 @@ the National Computational Infrastructure (NCI) Gadi high-performance
 computing system using the \texttt{gpuvolta} queue with NVIDIA Tesla V100
 32GB GPU nodes. The implementation uses Python~3.12, PyTorch~2.5.1, and
 CUDA toolkit~12.4.
-We will release the source code, configuration files, fold
-definitions, and mask-generation scripts to support reproducibility.
-% TODO(author): replace this comment with exact node/software details:
-% CPU/RAM per node and exact LPDD-specific lambda_cat if available.
+We will release the source code, configuration files, fold definitions, and
+mask-generation scripts to support reproducibility.
 
 
 
@@ -2299,7 +2296,8 @@ then introduced under MCAR, MAR, and MNAR at 30\% and 50\% missingness.
 
 \begin{table}[!t]
 \centering
-\caption{Ablation on the two-channel architecture under MCAR with 30\% and 70\% missingness.
+\caption{Two-channel ablation at 30\% and 70\% missingness under MCAR, MAR,
+and MNAR.
 The evaluation metric is \textbf{ImpErr}:  
 for continuous-only settings it reduces to RMSE,  
 and for categorical-only settings it reduces to classification error.}
@@ -2344,46 +2342,6 @@ variant suffers on categorical variables due to semantic drift, whereas the
 discrete-only variant loses numerical precision through discretisation. This
 supports the use of separate but coordinated generative mechanisms for
 mixed-type data.
-
-% \subsection{Loopholing vs. Standard Discrete Diffusion}
-
-% \begin{table}[!t]
-% \centering
-% \caption{
-% Ablation on the discrete diffusion mechanism (MNAR, 30\% and 70\% missingness).
-% Looph. denotes the proposed loopholing-based discrete diffusion, 
-% and Multi. a standard multinomial diffusion baseline.
-% }
-% \label{tab:ablation_loopholing}
-% \resizebox{0.48\textwidth}{!}{%
-% \begin{tabular}{l l c c}
-% \toprule
-% Dataset & Model 
-% & Acc (disc.) $\uparrow$
-% & ImpErr (disc.) $\downarrow$ \\
-% \midrule
-% \multirow{2}{*}{Adult (30\%)} 
-% & Multi. & 0.xx & 0.xx \\
-% & \textbf{Looph.} & \best{0.xx} & \best{0.xx} \\
-% \midrule
-% \multirow{2}{*}{Adult (70\%)} 
-% & Multi. & 0.xx & 0.xx \\
-% & \textbf{Looph.} & \best{0.xx} & \best{0.xx} \\
-% \midrule
-% \multirow{2}{*}{Car (30\%)} 
-% & Multi. & 0.xx & 0.xx \\
-% & \textbf{Looph.} & \best{0.xx} & \best{0.xx} \\
-% \midrule
-% \multirow{2}{*}{Car (70\%)} 
-% & Multi. & 0.xx & 0.xx \\
-% & \textbf{Looph.} & \best{0.xx} & \best{0.xx} \\
-% \bottomrule
-% \end{tabular}}
-% \end{table}
-% We replace the loopholing-based discrete diffusion module with a standard multinomial diffusion process, where noise is injected via Dirichlet perturbations followed by categorical sampling. While both methods operate on probability simplexes, the standard multinomial formulation suffers from probability-mass collapse and unstable transitions, particularly under high missingness or high-cardinality features.
-
-% Empirically, the loopholing-based diffusion achieves substantially higher categorical accuracy and lower displacement error, and produces smoother and more interpretable probability trajectories. This validates the importance of preserving discrete manifold structure throughout the diffusion process, a property uniquely enforced by the loopholing mechanism.
-
 
 \subsection{Self-mask ratio and effectiveness}
 
@@ -2532,7 +2490,7 @@ on RMSE under 50\% missing rate. Lower is better.
     \centering
     \includegraphics[width=\linewidth]{eval_var_T_letter.pdf}
     \vspace{-2em}
-    \caption{Adult}
+    \caption{Letter}
     \label{fig:ablation_sampling_letter}
 \end{subfigure}
 \hspace{-0.5em}
@@ -2540,7 +2498,7 @@ on RMSE under 50\% missing rate. Lower is better.
     \centering
     \includegraphics[width=\linewidth]{eval_var_T_cali.pdf}
             \vspace{-2em}
-    \caption{Banknote}
+    \caption{California}
     \label{fig:ablation_sampling_cali}
 \end{subfigure}
 \hspace{-0.5em}
@@ -2548,7 +2506,7 @@ on RMSE under 50\% missing rate. Lower is better.
     \centering
     \includegraphics[width=\linewidth]{eval_var_T_adult.pdf}
             \vspace{-2em}
-    \caption{California}
+    \caption{Adult}
     \label{fig:ablation_sampling_adult}
 \end{subfigure}
 %\vspace{-0.5em} % Optional: reduce space before caption
@@ -2556,7 +2514,7 @@ on RMSE under 50\% missing rate. Lower is better.
     \centering
     \includegraphics[width=\linewidth]{eval_var_T_bank.pdf}
             %\vspace{-2em}
-    \caption{Letter}
+    \caption{Banknote}
     \label{fig:ablation_sampling_bank}
 \end{subfigure}
 %\hspace{-0.5em}
@@ -2577,7 +2535,7 @@ on RMSE under 50\% missing rate. Lower is better.
 \end{subfigure}
 %\vspace{-0.5em}
 %\caption{RMSE Comparing different sampling strategies under varying $\eta$ values.}
-\caption{RMSE Comparison with varying $\eta$ values.}
+\caption{RMSE comparison with varying $\eta$ values.}
 \label{fig:ablation_sampling_combined}
 \end{figure}
 
@@ -2593,8 +2551,9 @@ $
 \sqrt{\frac{1 - \alpha_{\tau_{i-1}}}{1 - \alpha_{\tau_i}}}
 \sqrt{1 - \frac{\alpha_{\tau_i}}{\alpha_{\tau_{i-1}}}},
 $
-without changing model parameters. Table~\ref{tab:eta_step_table} and
-Figure~\ref{fig:ablation_sampling_combined} show that $\eta{=}0$ gives low
+without changing model parameters. The ablation results in
+Table~\ref{tab:eta_step_table} and Figure~\ref{fig:ablation_sampling_combined}
+show that $\eta{=}0$ gives low
 variance and competitive accuracy, especially for small $T$. Stochastic
 sampling can slightly improve some large-$T$ cases, but increases variance and
 runtime, supporting the deterministic DDIM design used in MissHDD.
