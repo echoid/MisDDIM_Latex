@@ -1375,7 +1375,7 @@ independent imputations, ensuring that cross-type dependencies are preserved.
     \EndFor
     \State $\mathcal{L}\gets \mathcal{L}_{\mathrm{cont}}(\hat{\boldsymbol{\epsilon}},\boldsymbol{\epsilon})
     +\lambda_{\mathrm{cat}}\mathcal{L}_{\mathrm{cat}}(\hat{\boldsymbol{\ell}},\mathbf{p}^{\mathrm{cat}}_0)$
-    \State $\theta\gets\mathrm{AdamW}(\theta,\nabla_\theta\mathcal{L})$
+    \State $\theta\gets\mathrm{Adam}(\theta,\nabla_\theta\mathcal{L})$
 \EndFor
 \State \Return $\theta$
 \end{algorithmic}
@@ -1708,37 +1708,44 @@ validation, and test split so that evaluation entries remain unseen during
 training.
 
 \textbf{Continuous channel.}
-The continuous branch uses a feature-wise Transformer encoder adapted from
-TabCSDI~\cite{tabcsdi} to parameterize the noise predictor
-$\epsilon_\theta$. Inputs include noisy continuous values, timestep
-embeddings, and mask embeddings. DDIM sampling is used for deterministic
-inference. This branch is adapted from our public MissDDIM implementation
-(\url{https://github.com/echoid/MissDDIM}), which provides the continuous
-conditional DDIM imputation backbone and self-masking training routine.
+The continuous branch follows the configuration of our public MissDDIM
+implementation (\url{https://github.com/echoid/MissDDIM}), which provides the
+conditional DDIM imputation backbone and self-masking training routine. The
+noise predictor is a TabCSDI-style feature-wise Transformer encoder with four
+residual layers, 64 hidden channels, two attention heads, a 128-dimensional
+diffusion-step embedding, a 32-dimensional time embedding, and a
+16-dimensional feature embedding. Each residual block contains separate
+time-wise and feature-wise Transformer encoders with GELU activations. The
+continuous diffusion process uses 100 training steps with a quadratic
+$\beta$ schedule from $10^{-4}$ to $0.5$. At inference, DDIM step skipping is
+used to evaluate reverse schedules with 100, 50, and 20 steps.
 
 \textbf{Discrete channel.}
 Categorical features are embedded through feature-specific embedding
-matrices and mapped to simplex representations. A lightweight
-feature-attention encoder predicts logits for the LPDD reverse transition,
-ensuring simplex-preserving updates at each timestep. The LPDD channel is
-adapted from the public Loopholing discrete diffusion implementation
+matrices and mapped to feature-wise simplex representations. The LPDD channel
+is adapted from the public Loopholing discrete diffusion implementation
 (\url{https://github.com/ahn-ml/lddm})~\cite{loopholing}. In the original
 implementation, the latent pathway is coupled with a DiT backbone for
-language-token generation. In MissHDD, we retain the latent-path update and
-loophole-style propagation of distributional information, but replace the
-tokenizer/DiT language backbone with a feature-wise tabular encoder and
-condition all updates on observed values, missingness masks, and the current
-continuous-channel estimates.
+language-token generation. Our tabular conditional adaptation retains the
+latent-path update and loophole-style propagation of distributional
+information, but replaces the tokenizer/DiT language backbone with a
+feature-wise tabular encoder. The encoder predicts feature-specific logits for
+the LPDD reverse transition, and each reverse update is conditioned on
+observed values, missingness masks, the timestep embedding, and the current
+continuous-channel estimates. This design preserves valid categorical
+simplex states while allowing the discrete trajectory to remain synchronized
+with the continuous DDIM channel.
 
 \textbf{Training.}
 Both channels are trained jointly using the objective in
-Eq.~\eqref{eq:joint_loss} and AdamW (learning rate
-$1\times10^{-4}$, batch size 64). We use $T{=}100$ diffusion steps with a
-cosine schedule for continuous noise levels and a linearly annealed LPDD
-kernel for discrete transitions. Training runs for 300 epochs with early
-stopping on validation error. The same self-mask is supplied to both
-channels, so gradients from continuous and categorical losses are propagated
-through the shared contextual encoder in each optimization step.
+Eq.~\eqref{eq:joint_loss}. The continuous channel follows the MissDDIM
+training configuration (Adam optimizer, learning rate $5\times10^{-4}$,
+weight decay $10^{-6}$, batch size 8, and 200 epochs), while LPDD-specific
+settings such as the categorical loss weight $\lambda_{\mathrm{cat}}$ and the
+LPDD kernel schedule are selected on the validation split and then fixed for
+test evaluation. The same self-mask is supplied to both channels, so gradients
+from continuous and categorical losses are propagated through the shared
+contextual encoder in each optimization step.
 
 \textbf{Sampling.}
 MissHDD performs 20-step deterministic DDIM updates for continuous variables
@@ -1756,11 +1763,12 @@ mean~$\pm$~standard deviation. Unless otherwise stated, hyperparameters are sele
 validation split and then fixed for test evaluation. Experiments were run on
 the National Computational Infrastructure (NCI) Gadi high-performance
 computing system using the \texttt{gpuvolta} queue with NVIDIA Tesla V100
-32GB GPU nodes. The implementation uses Python~3.12 and CUDA toolkit~12.4.
+32GB GPU nodes. The implementation uses Python~3.12, PyTorch~2.5.1, and
+CUDA toolkit~12.4.
 We will release the source code, configuration files, fold
 definitions, and mask-generation scripts to support reproducibility.
 % TODO(author): replace this comment with exact node/software details:
-% CPU/RAM per node, PyTorch version, architecture hyperparameters, and lambda_cat.
+% CPU/RAM per node and exact LPDD-specific lambda_cat if available.
 
 
 
