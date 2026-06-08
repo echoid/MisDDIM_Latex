@@ -56,12 +56,21 @@
 \usepackage{tikz}
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.18}
+\captionsetup{font=small}
+\setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
+\setlength{\floatsep}{8pt plus 2pt minus 2pt}
+\setlength{\intextsep}{8pt plus 2pt minus 2pt}
+\setlength{\abovecaptionskip}{4pt}
+\setlength{\belowcaptionskip}{2pt}
+\renewcommand{\arraystretch}{0.92}
+\setlength{\tabcolsep}{4pt}
 \usepackage[table]{xcolor}
 \definecolor{best}{RGB}{198, 226, 255}   % 很淡的浅蓝
 \definecolor{second}{RGB}{235, 245, 255} % 更淡一点的蓝白
 \newcommand{\best}[1]{\cellcolor{best}{\textbf{#1}}}
 \newcommand{\secondbest}[1]{\cellcolor{second}{\underline{#1}}}
 \newcommand{\meanstd}[2]{#1{\scriptsize$\pm$#2}}
+\newcommand{\algsmall}{\footnotesize}
 %% The amsmath package provides various useful equation environments.
 \usepackage{amsmath}
 %% The amsthm package provides extended theorem environments
@@ -571,7 +580,7 @@ the MissHDD framework.
 
 \begin{figure*}[t]
     \centering
-\includegraphics[width=\linewidth, height=0.30\textheight, keepaspectratio]{hdd.pdf}
+\includegraphics[width=\linewidth, height=0.24\textheight, keepaspectratio]{hdd.pdf}
 \caption{
 Overview of the \textbf{MissHDD} framework. Continuous and categorical
 features are processed through two coordinated diffusion channels: a
@@ -1358,16 +1367,17 @@ independent imputations, ensuring that cross-type dependencies are preserved.
 \begin{algorithm}[t]
 \caption{MissHDD joint training with self-masking}
 \label{alg:training}
+\algsmall
 \begin{algorithmic}[1]
 \Require Mini-batch $\mathcal{B}=\{(\mathbf{x}_i,\mathbf{m}_i)\}$, self-mask ratio $\rho$, steps $T$
 \Require Parameters $\theta=\{\theta_{\mathrm{sh}},\theta_{\mathrm{cont}},\theta_{\mathrm{cat}}\}$
 \For{each mini-batch $\mathcal{B}$}
     \ForAll{$(\mathbf{x},\mathbf{m})\in\mathcal{B}$}
-        \State $\tilde{\mathbf{m}}\sim\mathrm{Mask}(\mathbf{1}-\mathbf{m};\rho)$
-        \State $\mathbf{m}_{\mathrm{train}}\gets \mathbf{m}\lor\tilde{\mathbf{m}}$
-        \State $t\sim\mathrm{Uniform}(\{1,\ldots,T\})$
-        \State $\mathbf{x}^{\mathrm{cont}}_t\gets q_{\mathrm{cont}}(\mathbf{x}^{\mathrm{cont}}_0,t,\mathbf{m}_{\mathrm{train}})$
-        \State $\mathbf{p}^{\mathrm{cat}}_t\gets q_{\mathrm{cat}}(\mathbf{p}^{\mathrm{cat}}_0,t,\mathbf{m}_{\mathrm{train}})$
+        \State $\tilde{\mathbf{m}}\sim\mathrm{Mask}(\mathbf{1}-\mathbf{m};\rho)$;\quad
+        $\mathbf{m}_{\mathrm{train}}\gets \mathbf{m}\lor\tilde{\mathbf{m}}$;\quad
+        $t\sim\mathrm{Uniform}(\{1,\ldots,T\})$
+        \State $\mathbf{x}^{\mathrm{cont}}_t\gets q_{\mathrm{cont}}(\mathbf{x}^{\mathrm{cont}}_0,t,\mathbf{m}_{\mathrm{train}})$;\quad
+        $\mathbf{p}^{\mathrm{cat}}_t\gets q_{\mathrm{cat}}(\mathbf{p}^{\mathrm{cat}}_0,t,\mathbf{m}_{\mathrm{train}})$
         \State $\mathbf{z}_t\gets f_{\theta_{\mathrm{sh}}}(\mathbf{x}^{\mathrm{obs}},\mathbf{m}_{\mathrm{train}},
         \mathbf{x}^{\mathrm{cont}}_t,\mathbf{p}^{\mathrm{cat}}_t,t)$
         \State $\hat{\boldsymbol{\epsilon}}\gets g_{\theta_{\mathrm{cont}}}(\mathbf{z}_t)$;\quad
@@ -1384,10 +1394,10 @@ independent imputations, ensuring that cross-type dependencies are preserved.
 \begin{algorithm}[t]
 \caption{MissHDD deterministic inference}
 \label{alg:inference}
+\algsmall
 \begin{algorithmic}[1]
 \Require Incomplete input $\mathbf{x}^{\mathrm{obs}}$, mask $\mathbf{m}$, schedule $\tau_S>\cdots>\tau_0=0$
-\State $\mathbf{x}^{\mathrm{cont}}_{\tau_S}\sim\mathcal{N}(\mathbf{0},\mathbf{I})$ on missing continuous entries
-\State $\mathbf{p}^{(j)}_{\tau_S}\gets\mathbf{u}^{(j)}$ for each missing categorical feature $j$
+\State Initialize missing continuous entries with $\mathcal{N}(\mathbf{0},\mathbf{I})$ and missing categorical simplexes with $\mathbf{u}^{(j)}$
 \For{$s=S,\ldots,1$}
     \State $\mathbf{z}_{\tau_s}\gets f_{\theta_{\mathrm{sh}}}(\mathbf{x}^{\mathrm{obs}},\mathbf{m},
     \mathbf{x}^{\mathrm{cont}}_{\tau_s},\mathbf{p}^{\mathrm{cat}}_{\tau_s},\tau_s)$
@@ -1942,15 +1952,22 @@ definitions, and mask-generation scripts to support reproducibility.
 
 
 \subsection{Imputation Accuracy}
-We evaluate imputation quality across the three missingness mechanisms \textbf{MCAR}, \textbf{MAR}, and \textbf{MNAR}, each tested at missing rates of 10\%, 30\%, 50\%, and 70\%.
-Figures~\ref{fig:rmse_mcar}, \ref{fig:rmse_mar}, and \ref{fig:rmse_mnar} report the resulting Imputation Error (ImpErr) on the fully observed
-datasets with synthetic masks, while Figure~\ref{fig:miss_mechanism_boxplots} summarizes the aggregated performance using boxplots.
+We evaluate imputation quality under \textbf{MCAR}, \textbf{MAR}, and
+\textbf{MNAR} missingness at rates of 10\%, 30\%, 50\%, and 70\%.
+Figures~\ref{fig:rmse_mcar}, \ref{fig:rmse_mar}, and~\ref{fig:rmse_mnar}
+report ImpErr on fully observed datasets with synthetic masks, while
+Figure~\ref{fig:miss_mechanism_boxplots} summarizes the aggregated
+distributions.
 
-Across all datasets and mechanisms, ImpErr increases as the proportion of missing entries grows, with more pronounced degradation under MAR and MNAR where missingness exhibits structural dependence. Classical statistical imputers (\texttt{Mean}, \texttt{MICE}, \texttt{MissForest}) deteriorate
-rapidly at high missing rates, and latent-variable generative models (\texttt{GAIN}, \texttt{MIWAE}) show inconsistent performance across datasets. Diffusion-based baselines (\texttt{CSDI}, \texttt{TabCSDI},
-\texttt{MissDiff}) remain more stable overall but are still sensitive to categorical features and severe missingness. In contrast, \texttt{MissHDD} achieves consistently lower ImpErr across all mechanisms and missing rates. The deterministic continuous channel provides
-stable reconstruction for numerical variables, and the LPDD-based discrete channel substantially reduces categorical errors, which are a common failure mode for existing diffusion models. The self-masking strategy further enhances robustness by exposing the model to diverse masking patterns during training, allowing both diffusion channels to generalize effectively even when large portions of the data are removed. The aggregated boxplots show that \texttt{MissHDD} attains both a lower median ImpErr and clearly smaller variance, indicating strong resilience to the severity and structure of
-missingness.
+ImpErr increases with missingness severity, especially under MAR and MNAR.
+Classical imputers degrade rapidly at high missing rates, latent-variable
+generative models are less consistent across datasets, and diffusion baselines
+remain sensitive to categorical features. In contrast, \texttt{MissHDD}
+achieves consistently lower ImpErr across mechanisms and rates. The
+deterministic continuous channel stabilizes numerical reconstruction, the LPDD
+channel reduces categorical errors, and self-masking improves robustness to
+diverse missingness patterns. The aggregated boxplots further show lower
+median error and smaller variance.
 
 
 
@@ -2127,14 +2144,16 @@ MissHDD & \best{\meanstd{0.8325}{0.0149}} & \best{\meanstd{0.1218}{0.0146}} & \s
 
 \subsection{Downstream task utility}
 
-We further evaluate the practical usefulness of the imputed data by measuring downstream predictive performance.
-Table~\ref{tab:regression_results} reports MAE ($\downarrow$) on four regression datasets under $30\%$, $50\%$, and $70\%$ missingness, while Table~\ref{tab:classification_results} summarises F1 scores ($\uparrow$) on four classification benchmarks.
-
-Across both regression and classification tasks in Dataset Category~1, MissHDD consistently matches or surpasses all competing baselines, frequently achieving the best or second-best performance. Conventional statistical imputers degrade rapidly as missingness increases, and existing diffusion-based models display sensitivity to discrete variables or high missing rates. In contrast, MissHDD maintains robust performance even at $70\%$ missingness, reflecting the benefits of our architecture. These gains in F1 and MAE indicate that MissHDD not only reconstructs values more accurately but also preserves task-relevant predictive signal.
-
-
-
-For Dataset Category~2 (Table \ref{tab:incomplete_data}), MissHDD remains competitive and often performs among the top two methods, but the improvements are less pronounced. This is likely due to the relatively small size of these datasets and their limited feature dimensionality, which constrain the overall performance gap across imputation methods. In such low-data regimes, even simple imputers can perform reasonably well on downstream tasks, reducing the achievable separation between models. Nonetheless, MissHDD maintains stable behaviour across all datasets, demonstrating its robustness under both synthetic and organically arising missingness.
+We further evaluate whether imputed values preserve predictive structure.
+Table~\ref{tab:regression_results} reports MAE ($\downarrow$) for regression
+datasets, and Table~\ref{tab:classification_results} reports F1
+($\uparrow$) for classification datasets, both under 30\%, 50\%, and 70\%
+missingness. On Dataset Category~1, MissHDD frequently obtains the best or
+second-best result and remains robust at 70\% missingness, indicating that the
+two-channel architecture preserves task-relevant signal. On the naturally
+incomplete Category~2 datasets (Table~\ref{tab:incomplete_data}), improvements
+are smaller because the datasets are low-dimensional and relatively small, but
+MissHDD remains consistently competitive.
 
 \subsection{Statistical comparison}
 
@@ -2199,49 +2218,26 @@ separated under the Holm-adjusted post-hoc comparison at $\alpha=0.05$.}
 
 \subsection{Sampling Time}
 
-Diffusion-based imputers such as CSDI, TabCSDI, and MissDiff rely on
-\emph{stochastic} DDPM-style sampling. In practice, this requires generating
-multiple stochastic trajectories for each incomplete instance (typically 100
-samples, following standard practice) and aggregating them (e.g., via the
-median) to obtain stable imputations. While effective, this multi-sample
-strategy substantially increases inference cost.
-
-In contrast, the numerical diffusion channel in \texttt{MissHDD} adopts a
-\emph{deterministic} DDIM-like sampler: once the initial noise and score
-network are fixed, the entire sampling trajectory is uniquely determined. As a
-result, a single sampling pass is sufficient and repeated runs produce
-identical outputs. Furthermore, the number of diffusion steps $T$ may be
-reduced at inference time without retraining, providing a direct and flexible
-mechanism to trade off accuracy and speed.
-
-Importantly, existing diffusion-based baselines (CSDI, TabCSDI, MissDiff)
-operate only on \emph{continuous} features; they do not support discrete
-diffusion. To ensure a fair comparison, we therefore evaluate sampling time on
-purely numerical datasets and use only \texttt{MissHDD}'s continuous diffusion
-channel (Channel~1), matching the functionality of these baselines. Table~\ref{tab:inference_summary} reports average wall-clock time and RMSE
-across all benchmark numerical datasets using a fixed hardware and batch-size
-configuration. The first block shows DDPM-based baselines under their standard
-100-sample stochastic setting. The second block reports the same baselines
-with a single stochastic trajectory, which reduces runtime but generally
-increases imputation error because no multi-sample aggregation is available.
-The final block shows \texttt{MissHDD} using a \emph{single} deterministic
-trajectory with varying diffusion lengths $T$. With $T{=}100$,
-\texttt{MissHDD} achieves the lowest RMSE among the reported settings, while
-reducing the number of steps to $T{=}50$ and $T{=}20$ yields lower latency
-with only modest increases in error.
-This comparison reflects the practical distinction between probabilistic
-multi-sample imputation and deterministic point imputation; it should not be
-interpreted as an equal-uncertainty sampling comparison.
+CSDI, TabCSDI, and MissDiff use stochastic DDPM-style sampling, typically
+generating 100 trajectories per instance and aggregating them to stabilize the
+imputation. MissHDD instead uses a deterministic DDIM-like trajectory, so a
+single pass is sufficient once the initial state and score network are fixed.
+Because these baselines operate on continuous features only, runtime is
+measured on numerical datasets using MissHDD's continuous channel for a matched
+functional comparison. Table~\ref{tab:inference_summary} reports wall-clock
+time and RMSE under the standard 100-sample baseline protocol, a diagnostic
+one-sample baseline protocol, and single-trajectory MissHDD with varying
+diffusion lengths. MissHDD achieves the lowest RMSE at $T{=}100$, while
+$T{=}50$ and $T{=}20$ provide faster deterministic point imputations with
+modest error increases. The comparison therefore reflects the practical
+difference between probabilistic multi-sample imputation and deterministic
+point imputation, not an equal-uncertainty sampling setting.
 \begin{table}[!t]
 \centering
 \caption{
-Inference time and imputation accuracy (RMSE~$\downarrow$) for generative
-imputation models. Baseline methods use 100 stochastic samples per instance,
-or a single stochastic sample for diagnostic comparison, while
-\texttt{MissHDD} uses a single deterministic DDIM trajectory with different
-numbers of diffusion steps~$T$. The table reports both the standard
-probabilistic baseline protocol and the deterministic point-imputation
-protocol used by \texttt{MissHDD}.
+Inference time and RMSE~($\downarrow$). Baselines are reported under their
+standard 100-sample stochastic protocol and a diagnostic one-sample protocol;
+\texttt{MissHDD} uses one deterministic DDIM trajectory with varying $T$.
 }
 \label{tab:inference_summary}
 \begin{tabular}{c|l|c|c}
@@ -2280,23 +2276,15 @@ protocol used by \texttt{MissHDD}.
 
 \subsection{Synthetic heterogeneous dataset for ablation}
 
-To isolate the contribution of each diffusion component, we construct a
-synthetic heterogeneous tabular dataset where both the feature-generating
-process and missingness mechanisms are fully controlled.
+To isolate component contributions, we construct a controlled synthetic
+heterogeneous dataset with $10{,}000$ samples and 30 features: 15 continuous
+and 15 categorical.
 
-We generate $10{,}000$ samples with 30 features, consisting of 15 continuous
-and 15 categorical variables. Both feature types are generated from a shared
-latent Gaussian vector, inducing realistic nonlinear correlations across
-continuous and categorical dimensions. Continuous features are obtained by applying smooth nonlinear transformations
-of the latent variables with added Gaussian noise, while categorical features
-are sampled from softmax distributions whose logits depend on the same latent
-vector. This yields heterogeneous data with structured dependencies similar to
-real-world tabular datasets. Starting from the fully observed data, we introduce missing values under MCAR, MAR, and MNAR mechanisms at missing rates of $30\%$ and $50\%$.
-MCAR is generated by independent masking, MAR by conditioning feature
-missingness on other observed variables, and MNAR by making missingness depend
-on the feature’s own value (for both continuous and categorical variables). This synthetic setup provides a controlled environment for evaluating how each
-component of \texttt{MissHDD} contributes to imputation accuracy under
-different missingness mechanisms.
+Both feature types are generated from a shared latent Gaussian vector, inducing
+nonlinear cross-type dependencies. Continuous features use smooth nonlinear
+transformations with Gaussian noise, while categorical features are sampled
+from softmax logits derived from the same latent vector. Missing values are
+then introduced under MCAR, MAR, and MNAR at 30\% and 50\% missingness.
 
 
 
@@ -2414,7 +2402,14 @@ Dataset & Model
 \end{tabular}}
 \end{table}
 
-To quantify the benefit of modelling continuous and categorical variables through distinct diffusion pathways, we compare MissHDD with two single-channel variants: (i) a continuous-only model where all features are numerically encoded and imputed via a DDIM-based diffusion process; and (ii) a discrete-only model where continuous features are discretised into quantile bins and imputed using the LPDD channel. Across all datasets, the full two-channel architecture consistently achieves lower imputation error and higher categorical accuracy. The continuous-only variant performs poorly on categorical variables due to semantic drift induced by continuous relaxations, whereas the discrete-only variant loses precision on numerical attributes due to discretisation artefacts. These results confirm that heterogeneous tabular data require separate generative mechanisms and validate the design choice underlying MissHDD.
+We compare the full model with two single-channel variants: a continuous-only
+DDIM model using numerical encodings for all features, and a discrete-only
+LPDD model that discretises continuous features into quantile bins. The full
+model consistently achieves lower imputation error. The continuous-only
+variant suffers on categorical variables due to semantic drift, whereas the
+discrete-only variant loses numerical precision through discretisation. This
+supports the use of separate but coordinated generative mechanisms for
+mixed-type data.
 
 % \subsection{Loopholing vs. Standard Discrete Diffusion}
 
@@ -2505,21 +2500,12 @@ of observed entries under different masking schemes.
 \bottomrule
 \end{tabular}}
 \end{table}
-Table~\ref{tab:ablation_self_mask} presents an ablation of the proposed self-masking
-strategy. Training without auxiliary masking (Zero-Imp and Mean-Imp) yields the
-weakest performance across all missingness mechanisms, indicating that relying solely
-on the original mask causes overfitting to a single pattern and poor generalisation,
-especially under MAR and MNAR.
-
-Introducing self-masking consistently reduces ImpErr. A ratio of 30\% offers the best
-overall trade-off, providing sufficient pseudo-missing supervision without excessively
-weakening the conditioning signal. A higher ratio (50\%) can match or slightly improve
-performance but exhibits slower and less stable optimisation. Conversely, 10\%
-masking is generally insufficient. Across MCAR, MAR, and MNAR self-masking styles, no mechanism dominates
-consistently. Differences are minor, and MCAR self-masking emerges as a simple and
-reliable default. Overall, self-masking is an essential component that improves
-robustness and stabilises training without requiring external imputations or fully
-observed data.
+Table~\ref{tab:ablation_self_mask} shows that training without auxiliary
+self-masking performs worst, especially under MAR and MNAR. Adding self-masks
+consistently reduces ImpErr, with 30\% providing the most stable trade-off
+between pseudo-missing supervision and retained conditioning signal. No
+self-mask mechanism dominates across all settings, so MCAR self-masking is a
+simple and reliable default.
 
 % Table \ref{tab:ablation_self_mask} presents a detailed ablation of our self-masking design.
 % We compare training without any auxiliary masking (“Zero-Imp” and “Mean-Imp”) against various self-masking ratios $(10\%, 30\%, 50\%)$ applied under MCAR, MAR, and MNAR masking schemes.
@@ -2672,19 +2658,21 @@ on RMSE under 50\% missing rate. Lower is better.
 
 
 
-To characterise the behaviour of the continuous diffusion channel, we study how
-sampling stochasticity and the number of reverse steps affect imputation quality.
-Stochasticity is controlled through the DDIM noise parameter
-$\eta \in \{0.0, 0.5, 1.0\}$, where $\eta{=}0$ corresponds to a fully deterministic
-trajectory and larger values progressively approach stochastic DDPM sampling.  
-The injected variance at step $\tau_i$ is $
+To characterise the continuous diffusion channel, we vary DDIM stochasticity
+$\eta \in \{0.0, 0.5, 1.0\}$ and the number of reverse steps
+$T \in \{25, 50, 75, 100\}$. Here $\eta{=}0$ is deterministic and larger
+values approach stochastic DDPM sampling, with injected variance
+$
 \sigma_{\tau_i}(\eta)
 = \eta 
 \sqrt{\frac{1 - \alpha_{\tau_{i-1}}}{1 - \alpha_{\tau_i}}}
 \sqrt{1 - \frac{\alpha_{\tau_i}}{\alpha_{\tau_{i-1}}}},
-$ allowing us to vary stochasticity without altering model parameters. We additionally vary the number of sampling steps $T \in \{25, 50, 75, 100\}$ to examine the trade-off between runtime and reconstruction fidelity, reflecting deployment scenarios with latency constraints. Table~\ref{tab:eta_step_table} and Figure~\ref{fig:ablation_sampling_combined}
-summarise RMSE and its standard deviation across repeated runs.  The deterministic setting ($\eta{=}0$) yields consistently low variance and remains competitive or superior in accuracy, especially for small $T$.  
-Introducing stochasticity ($\eta>0$) can offer slight gains at larger $T$ but leads to substantially higher variance and slower inference. These results confirm that the deterministic DDIM strategy employed in the continuous channel of \texttt{MissHDD} achieves a favourable balance of stability, accuracy, and efficiency for practical imputation workloads.
+$
+without changing model parameters. Table~\ref{tab:eta_step_table} and
+Figure~\ref{fig:ablation_sampling_combined} show that $\eta{=}0$ gives low
+variance and competitive accuracy, especially for small $T$. Stochastic
+sampling can slightly improve some large-$T$ cases, but increases variance and
+runtime, supporting the deterministic DDIM design used in MissHDD.
 
 \section{Limitations}
 
