@@ -1756,10 +1756,11 @@ mean~$\pm$~standard deviation. Unless otherwise stated, hyperparameters are sele
 validation split and then fixed for test evaluation. Experiments were run on
 the National Computational Infrastructure (NCI) Gadi high-performance
 computing system using the \texttt{gpuvolta} queue with NVIDIA Tesla V100
-32GB GPU nodes. We will release the source code, configuration files, fold
+32GB GPU nodes. The implementation uses Python~3.12 and CUDA toolkit~12.4.
+We will release the source code, configuration files, fold
 definitions, and mask-generation scripts to support reproducibility.
 % TODO(author): replace this comment with exact node/software details:
-% CPU/RAM per node, Python/PyTorch/CUDA versions, and std values.
+% CPU/RAM per node, PyTorch version, architecture hyperparameters, and lambda_cat.
 
 
 
