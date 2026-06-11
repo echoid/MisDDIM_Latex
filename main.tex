@@ -1370,17 +1370,17 @@ conditioning pattern.
 
 \subsection{Joint Reconstruction}
 
-The two diffusion channels in MissHDD do not operate independently. At every
-reverse diffusion step $t$, both channels are conditioned on the same unified
-contextual representation $\mathbf{z}_t$, which includes (i) the observed
-features and (ii) the most recent estimates produced by the other channel.
-This shared-conditioning design keeps numerical and categorical trajectories
-aligned throughout the denoising process. During inference, the channels are
-updated synchronously: the current continuous estimates and categorical
-simplex states are first embedded into $\mathbf{z}_t$, the DDIM update is
-applied to missing numerical coordinates, the LPDD update is applied to
-missing categorical simplexes, and the updated states are then fed back into
-the next reverse step. When $t=0$ is reached, the continuous DDIM channel outputs the deterministic
+The two diffusion channels in MissHDD do not operate independently. During
+training, they are jointly optimized with a shared contextual encoder that
+receives synchronized forward-corrupted continuous and categorical states. This
+acts as denoising-style teacher forcing: both channels learn under the same
+mask, timestep, and observed context, while gradients from both losses update
+the shared encoder. During inference, the same conditioning structure is used
+recurrently. The current continuous estimates and categorical simplex states
+are embedded into $\mathbf{z}_t$, the DDIM update is applied to missing
+numerical coordinates, the LPDD update is applied to missing categorical
+simplexes, and the updated states are fed back into the next reverse step. When
+$t=0$ is reached, the continuous DDIM channel outputs the deterministic
 numerical reconstruction $\hat{\mathbf{x}}^{\mathrm{cont}}$, and the LPDD
 channel yields categorical distributions whose MAP assignments form
 $\hat{\mathbf{x}}^{\mathrm{cat}}$. The final imputed sample is obtained by $ \hat{\mathbf{x}} = \hat{\mathbf{x}}^{\mathrm{cont}}\cup \hat{\mathbf{x}}^{\mathrm{cat}},$ with the union respecting the original feature order. Because both channels evolve under the same conditioning signals, the result is a single coherent estimate of $p(\mathbf{x}^{\mathrm{mis}} \mid \mathbf{x}^{\mathrm{obs}})$ rather than two
@@ -1419,7 +1419,7 @@ independent imputations, ensuring that cross-type dependencies are preserved.
 \algsmall
 \begin{algorithmic}[1]
 \Require Incomplete input $\mathbf{x}^{\mathrm{obs}}$, mask $\mathbf{m}$, schedule $\tau_S>\cdots>\tau_0=0$
-\State Initialize missing continuous entries with $\mathcal{N}(\mathbf{0},\mathbf{I})$ and missing categorical simplexes with $\mathbf{u}^{(j)}$
+\State Initialize missing continuous entries with a fixed $\mathcal{N}(\mathbf{0},\mathbf{I})$ latent and missing categorical simplexes with $\mathbf{u}^{(j)}$
 \For{$s=S,\ldots,1$}
     \State $\mathbf{z}_{\tau_s}\gets f_{\theta_{\mathrm{sh}}}(\mathbf{x}^{\mathrm{obs}},\mathbf{m},
     \mathbf{x}^{\mathrm{cont}}_{\tau_s},\mathbf{p}^{\mathrm{cat}}_{\tau_s},\tau_s)$
@@ -1742,15 +1742,21 @@ training configuration (Adam optimizer, learning rate $5\times10^{-4}$,
 weight decay $10^{-6}$, batch size 8, and 200 epochs), while LPDD-specific
 settings such as the categorical loss weight $\lambda_{\mathrm{cat}}$ and the
 LPDD kernel schedule are selected on the validation split and then fixed for
-test evaluation. The same self-mask is supplied to both channels, so gradients
-from continuous and categorical losses are propagated through the shared
-contextual encoder in each optimization step.
+test evaluation. We choose $\lambda_{\mathrm{cat}}$ to keep the continuous
+denoising loss and categorical cross-entropy on comparable validation scales;
+we did not perform a full $\lambda_{\mathrm{cat}}$ ablation. The same self-mask
+is supplied to both channels, so gradients from continuous and categorical
+losses are propagated through the shared contextual encoder in each
+optimization step.
 
 \textbf{Sampling.}
 MissHDD performs 20-step deterministic DDIM updates for continuous variables
-and 20-step LPDD reverse transitions for categorical variables. The final
-imputation is obtained by combining the reconstructed continuous values with
-the $\arg\max$ categorical predictions.
+and 20-step LPDD reverse transitions for categorical variables. As in DDIM,
+the reverse update is deterministic once the initial latent state is fixed. In
+our evaluation, the continuous latent state is generated under the fixed global
+seed, and missing categorical variables are initialized to the fixed uniform
+simplex $\mathbf{u}^{(j)}$. The final imputation is obtained by combining the
+reconstructed continuous values with the $\arg\max$ categorical predictions.
 
 \textbf{Reproducibility.}
 All data splits, mask generation procedures, and model initializations are
@@ -2567,8 +2573,10 @@ stable point imputation and does not directly quantify uncertainty over
 multiple plausible imputations. Third, the feature-wise simplex representation
 scales with the total categorical vocabulary size \(\sum_j K_j\), so
 high-cardinality variables may require shared embeddings, low-rank heads, or
-top-$k$ truncation. Finally, self-masking depends on how well auxiliary masks
-match test-time missingness.
+top-$k$ truncation. Finally, the auxiliary self-mask is MCAR-style and may not
+fully match structured MAR or MNAR mechanisms. It provides additional
+denoising supervision rather than a model of the missingness process itself;
+adaptive feature-dependent self-masking is left for future work.
 
 \section{Conclusion}
 
