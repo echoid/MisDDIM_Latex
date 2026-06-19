@@ -1418,7 +1418,7 @@ independent imputations, ensuring that cross-type dependencies are preserved.
 \algsmall
 \begin{algorithmic}[1]
 \Require Incomplete input $\mathbf{x}^{\mathrm{obs}}$, mask $\mathbf{m}$, schedule $\tau_S>\cdots>\tau_0=0$
-\State Initialize missing continuous entries with a fixed $\mathcal{N}(\mathbf{0},\mathbf{I})$ latent and missing categorical simplexes with $\mathbf{u}^{(j)}$
+\State Initialize missing continuous entries with a fixed $\mathcal{N}(\mathbf{0},\mathbf{I})$ and missing categorical simplexes with $\mathbf{u}^{(j)}$
 \For{$s=S,\ldots,1$}
     \State $\mathbf{z}_{\tau_s}\gets f_{\theta_{\mathrm{sh}}}(\mathbf{x}^{\mathrm{obs}},\mathbf{m},
     \mathbf{x}^{\mathrm{cont}}_{\tau_s},\mathbf{p}^{\mathrm{cat}}_{\tau_s},\tau_s)$
