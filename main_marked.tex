@@ -65,6 +65,9 @@
 \renewcommand{\arraystretch}{0.92}
 \setlength{\tabcolsep}{4pt}
 \usepackage[table]{xcolor}
+% Marked-up revision commands
+\newcommand{\DIFaddbegin}{\begingroup\color{blue}}
+\newcommand{\DIFaddend}{\endgroup}
 \definecolor{best}{RGB}{198, 226, 255}   % light blue
 \definecolor{second}{RGB}{235, 245, 255} % lighter blue
 \newcommand{\best}[1]{\cellcolor{best}{\textbf{#1}}}
@@ -173,7 +176,11 @@ Generative modeling
 
 \end{frontmatter}
 
+%DIF > begin revised block
+\DIFaddbegin
 %% Add \usepackage{lineno} before \begin{document} and uncomment
+\DIFaddend
+%DIF > end revised block
 %% following line to enable line numbers
 %% \linenumbers
 
@@ -183,7 +190,11 @@ Generative modeling
 
 Missing data are pervasive in real-world tabular applications such as healthcare~\cite{healthcare}, finance~\cite{financial}, recommendation systems~\cite{recommendation}, and sensor networks~\cite{sensor}. Incomplete samples impair predictive performance and introduce uncertainty in downstream analysis, making imputation a critical preprocessing step. Classical approaches including mean or mode substitution~\cite{mean,mean2}, $k$-nearest neighbors~\cite{knn}, MICE~\cite{mice}, and MissForest~\cite{missforest} are computationally efficient but rely on restrictive assumptions that limit their ability to capture complex dependencies in heterogeneous data.
 
+%DIF > begin revised block
+\DIFaddbegin
 Deep generative imputers offer more expressive alternatives. GAN-based methods such as GAIN~\cite{yoon2018gain} and MisGAN~\cite{misGAN}, variational models including MIWAE~\cite{mattei2019miwae} and HI-VAE~\cite{hivae}, and diffusion-based imputers such as CSDI~\cite{csdi}, TabCSDI~\cite{tabcsdi}, MissDiff~\cite{missdiff}, TabDDPM~\cite{tabddpm}, and DiffPuter~\cite{diffputer} learn richer dependencies between observed and missing variables.
+\DIFaddend
+%DIF > end revised block
 
 Despite these advances, adapting diffusion mechanisms to tabular imputation remains challenging. Most existing methods are built upon Denoising Diffusion Probabilistic Models (DDPMs), whose stochastic reverse processes incur high inference cost and produce inconsistent imputations across runs. Unlike generative sampling tasks where diversity is desirable, imputation requires deterministic and reproducible estimates, making long stochastic chains poorly aligned with downstream modelling needs. Deterministic Denoising Diffusion Implicit Model (DDIM)-style formulations~\cite{ddim,missddim} offer a promising alternative, but existing approaches are limited to continuous feature spaces.
 
@@ -191,21 +202,35 @@ Additional difficulties arise from both incomplete inputs and feature heterogene
 
 To address these challenges, we propose \textbf{MissHDD}, a hybrid deterministic diffusion framework for imputing heterogeneous incomplete tabular data. MissHDD decomposes the generative process into two coordinated diffusion channels aligned with feature types. A continuous DDIM-based channel provides deterministic and stable refinement for numerical variables, while a discrete latent-path diffusion channel models categorical and other discrete attributes within their valid probability domains. Both channels are trained under a unified conditional objective that models the distribution of missing values given observed inputs. To enable learning from realistically incomplete datasets, we further introduce a \textbf{self-masking} strategy that synthesises pseudo-missing entries from partially observed samples, eliminating the need for fully observed training data.
 
+%DIF > begin revised block
+\DIFaddbegin
 Our objective is to accurately, stably, and efficiently reconstruct missing entries in heterogeneous tables while preserving cross-type dependencies.
 
 Experiments show that MissHDD improves imputation accuracy, yields deterministic outputs, and reduces inference latency relative to stochastic diffusion imputers under the standard multi-sample protocol.
+\DIFaddend
+%DIF > end revised block
 
 \textbf{Our main contributions are as follows:}
 \begin{itemize}
+%DIF > begin revised block
+\DIFaddbegin
 \item We propose \textbf{MissHDD}, a hybrid deterministic diffusion framework for incomplete heterogeneous tabular data that coordinates continuous DDIM-based numerical imputation with simplex-based categorical imputation.
 \item We design a conditional latent-path discrete diffusion mechanism tailored to categorical and discrete tabular attributes, preserving simplex validity and distributional context throughout denoising.
+\DIFaddend
+%DIF > end revised block
 \item We introduce a unified self-masking strategy that enables learning from incomplete samples without requiring fully observed training data and improves robustness under MCAR, MAR, and MNAR settings.
+%DIF > begin revised block
+\DIFaddbegin
 \item Experiments across heterogeneous datasets show improved imputation accuracy, stability, and inference efficiency over representative baselines.
+\DIFaddend
+%DIF > end revised block
 \end{itemize}
 
 \section{Related Work}
 
 \textbf{Traditional Imputation Methods.}
+%DIF > begin revised block
+\DIFaddbegin
 Classical approaches such as mean or mode substitution~\cite{mean,mean2},
 $k$-nearest neighbors~\cite{knn}, MICE~\cite{mice}, and
 MissForest~\cite{missforest} are efficient but rely on restrictive assumptions
@@ -215,15 +240,23 @@ Recent \textit{Pattern Recognition} studies also address missing information in
 incomplete multimodal learning~\cite{mce2026}, electronic health record
 classification~\cite{moss2026}, and anomaly detection~\cite{vmgm2026}, but not
 deterministic diffusion imputation for heterogeneous tabular data.
+\DIFaddend
+%DIF > end revised block
 
 \textbf{Deep Generative Imputation.}
+%DIF > begin revised block
+\DIFaddbegin
 GAN- and VAE-based imputers such as GAIN~\cite{yoon2018gain},
 MisGAN~\cite{misGAN}, MIWAE~\cite{mattei2019miwae}, and HI-VAE~\cite{hivae}
 learn flexible dependencies, while GRAPE~\cite{grape} and IGRM~\cite{igrm}
 add graph or iterative reasoning. However, many assume complete training data
 or map categorical variables into continuous embeddings.
+\DIFaddend
+%DIF > end revised block
 
 \textbf{Diffusion Models for Missing Data.}
+%DIF > begin revised block
+\DIFaddbegin
 Diffusion models~\cite{dm1,chang2025design,dreview1} have recently been
 adapted for imputation. TabCSDI~\cite{tabcsdi} uses conditional score matching,
 MissDiff~\cite{missdiff} learns from partially observed samples, and
@@ -231,22 +264,32 @@ DiffPuter~\cite{diffputer} integrates diffusion into an EM-style framework.
 TabDDPM~\cite{tabddpm} handles mixed-type data with Gaussian and multinomial
 transitions, but still relies on fully observed training features and
 stochastic DDPM sampling.
+\DIFaddend
+%DIF > end revised block
 
 A common limitation among these models is their dependence on stochastic reverse processes, which require many denoising steps and yield variable imputations across runs. Recent deterministic formulations, such as MissDDIM~\cite{missddim}, mitigate this by adopting DDIM-based non-Markovian updates for continuous variables, producing stable and low-latency imputations. However, these approaches still operate under a single diffusion process for all feature types. This unified treatment overlooks the distinct statistical domains of numerical and categorical variables, leading to drift and instability when categorical embeddings are perturbed by continuous Gaussian noise.
 
 
 
 \textbf{Generative Modeling for Heterogeneous Tabular Data.}
+%DIF > begin revised block
+\DIFaddbegin
 Mixed-type tabular data require different treatments for numerical and
 categorical variables. TabDDPM~\cite{tabddpm}, CoDi~\cite{codi},
 CDTD~\cite{cdtd}, and TabDiff~\cite{tabdiff} all address feature heterogeneity
 in tabular diffusion, mainly for synthesis or stochastic conditional
 generation rather than deterministic point imputation from incomplete inputs.
+\DIFaddend
+%DIF > end revised block
 
+%DIF > begin revised block
+\DIFaddbegin
 MissHDD addresses the complementary setting of deterministic heterogeneous
 imputation: DDIM refinement for numerical variables, LPDD-inspired simplex
 updates for categorical variables, and self-masking for learning from
 incomplete samples.
+\DIFaddend
+%DIF > end revised block
 
 
 \section{Preliminaries}
@@ -374,7 +417,11 @@ and infer plausible values for the missing entries using the observed features.
 % $
 % p(\mathbf{x}^{\mathrm{mis}}_0 \mid \mathbf{x}^{\mathrm{obs}}_0)
 % $
+%DIF > begin revised block
+\DIFaddbegin
 % and infer plausible values for the missing entries using the observed features.
+\DIFaddend
+%DIF > end revised block
 
 
 %When combined with heterogeneous feature types, this conditional
@@ -564,7 +611,11 @@ deterministic and aware of feature-type heterogeneity.
 
 \section{The Proposed MissHDD Framework}
 
+%DIF > begin revised block
+\DIFaddbegin
 In this work, we propose MissHDD, a \textbf{H}ybrid \textbf{D}eterministic \textbf{Diffusion} framework designed to address the two core limitations of existing diffusion-based imputers: the inefficiency and variability caused by stochastic DDPM sampling, and the incompatibility
+\DIFaddend
+%DIF > end revised block
 of a single continuous diffusion process with heterogeneous tabular
 features. Numerical and categorical variables follow fundamentally different
 data-generation dynamics, making it difficult for a unified noise model to
@@ -589,7 +640,11 @@ the MissHDD framework.
 % stable, and variance-free reconstructions by leveraging non-Markovian deterministic trajectories,
 % making it well suited for downstream pipelines that require reproducible imputations. The \emph{discrete channel} operates in parallel via a loopholing-based discrete diffusion mechanism
 % designed for categorical or other finite-state variables. Unlike continuous Gaussian diffusion, it
+%DIF > begin revised block
+\DIFaddbegin
 % pushes one-hot vectors off their probability simplex and leads to semantic drift--the discrete channel preserves probability mass across timesteps and prevents the collapse behaviors commonly observed in naïve one-hot diffusion. This ensures that categorical and discrete variables remain within their
+\DIFaddend
+%DIF > end revised block
 % valid state space during both training and sampling. Both channels are unified under a shared conditional objective that models
 % \(
 % p(\mathbf{x}^{\mathrm{mis}} \mid \mathbf{x}^{\mathrm{obs}})
@@ -603,13 +658,21 @@ the MissHDD framework.
 
 \begin{figure*}[t]
     \centering
+%DIF > begin revised block
+\DIFaddbegin
 \includegraphics[width=\textwidth]{hdd2.pdf}
+\DIFaddend
+%DIF > end revised block
 \caption{
+%DIF > begin revised block
+\DIFaddbegin
 Overview of the \textbf{MissHDD} framework. Training uses self-masking and a
 shared contextual encoder to jointly optimize the continuous DDIM and
 categorical LPDD channels. Inference follows a deterministic reverse
 trajectory with recurrent cross-channel feedback before final decoding and
 merging with the observed entries.}
+\DIFaddend
+%DIF > end revised block
     \label{fig:MissHDD_overview}
 \end{figure*}
 
@@ -630,13 +693,21 @@ introduce latency and variability that conflict with the stability and
 reproducibility required for imputation. Deterministic DDIM~\cite{ddim,missddim} trajectories
 address these limitations by replacing stochastic reverse transitions with
 non-Markovian updates that preserve reconstruction quality while eliminating
+%DIF > begin revised block
+\DIFaddbegin
 sampling noise (see Figure~\ref{fig:ddim_wrap}). Building on this idea, MissHDD employs a conditional DDIM
+\DIFaddend
+%DIF > end revised block
 formulation that reconstructs only the missing numerical coordinates while
 conditioning all denoising steps on the observed ones.
 \begin{wrapfigure}{r}{0.48\textwidth}
     \vspace{-10pt}
     \centering
+%DIF > begin revised block
+\DIFaddbegin
     \includegraphics[width=0.47\textwidth]{plot.pdf}
+\DIFaddend
+%DIF > end revised block
     \caption{
         Different sampling processes: traditional stochastic diffusion (top)
         versus deterministic non-Markovian inference (bottom).
@@ -682,7 +753,11 @@ step. In contrast, DDIM sets $\sigma_t=0$ and yields the deterministic update:
 \epsilon_\theta(\mathbf{x}_t^{\mathrm{mis}},t\mid\mathbf{x}_0^{\mathrm{obs}}),
 \end{equation}
 producing stable and reproducible reconstructions while enabling large
+%DIF > begin revised block
+\DIFaddbegin
 timestep skips and faster inference.
+\DIFaddend
+%DIF > end revised block
 
 \subsubsection{Training objective}
 Following the DDPM/DDIM paradigm, the continuous channel is trained using a
@@ -725,7 +800,11 @@ $\mathbf{x}_0^{\mathrm{mis}}$ efficiently and with high stability.
 % In the continuous channel, we operate only on the numerical coordinates within the
 % missing subset $\mathbf{x}_0^{\mathrm{mis}}$ of $\mathbf{x}_0$; $\mathbf{x}_0^{\mathrm{mis,cont}}
 % = \{ x_i : i \in \mathcal{I}_{\mathrm{mis}} \cap \mathcal{I}_{\mathrm{cont}} \}$. For notational simplicity, we denote this subset simply by
+%DIF > begin revised block
+\DIFaddbegin
 % $\mathbf{x}^{\mathrm{mis}}$.
+\DIFaddend
+%DIF > end revised block
 % Forward diffusion is applied only to the missing numerical dimensions, leaving
 % observed features untouched. The corrupted latent state at step $t$ is:
 % \[
@@ -790,33 +869,53 @@ $\mathbf{x}_0^{\mathrm{mis}}$ efficiently and with high stability.
 % \]
 % This update eliminates all stochastic sampling noise while preserving the DDPM training objective,
 % because DDIM trajectories correspond to exact solutions of the reverse-time ODE implied by the
+%DIF > begin revised block
+\DIFaddbegin
 % score model. A key consequence of adopting DDIM sampling is that the reverse mapping
 % $\mathbf{x}_T^{\mathrm{mis}} \rightarrow \mathbf{x}_0^{\mathrm{mis}}$ becomes fully deterministic,
 % yielding imputations that are stable and reproducible across runs. Moreover, DDIM supports large
 % non-uniform timestep skips (often 20-50 steps)~\cite{missddim} without compromising reconstruction quality, reducing sampling cost by an order of magnitude compared with DDPM. Finally, the absence of stochastic noise in the reverse trajectory eliminates variance accumulation, producing smoother and
 % more numerically stable denoising paths these properties which are particularly important for reliable
+\DIFaddend
+%DIF > end revised block
 % downstream inference and decision-making tasks.
 
 % \subsubsection{Training objective.}
+%DIF > begin revised block
+\DIFaddbegin
 % The continuous channel of MissHDD follows the standard DDPM/DDIM training paradigm,
 % adapted to the conditional imputation setting. Given a sample with observed numerical
 % features $\mathbf{x}_0^{\mathrm{obs}}$ and missing targets $\mathbf{x}_0^{\mathrm{mis}}$, only the missing
+\DIFaddend
+%DIF > end revised block
 % coordinates are corrupted by the forward diffusion process:
 % \[
 % \mathbf{x}_t^{\mathrm{mis}}
 % = \sqrt{\alpha_t}\,\mathbf{x}_0^{\mathrm{mis}}
 %   + \sqrt{1-\alpha_t}\,\boldsymbol{\epsilon},
+%DIF > begin revised block
+\DIFaddbegin
 % \qquad
+\DIFaddend
+%DIF > end revised block
 % \boldsymbol{\epsilon}\sim\mathcal{N}(\mathbf{0},\mathbf{I}),
 % \]
+%DIF > begin revised block
+\DIFaddbegin
 % while the observed entries remain fixed and are supplied as conditioning information
+\DIFaddend
+%DIF > end revised block
 % throughout the reverse steps.
 
 % A conditional noise-prediction network
 % \[
 % \epsilon_\theta(\mathbf{x}_t^{\mathrm{mis}},\, t \mid \mathbf{x}_0^{\mathrm{obs}})
 % \]
+%DIF > begin revised block
+\DIFaddbegin
 % is trained to recover the injected Gaussian noise. This leads to the conditional
+\DIFaddend
+%DIF > end revised block
 % denoising score-matching objective:
 % \[
 % \min_{\theta}\;
@@ -829,13 +928,19 @@ $\mathbf{x}_0^{\mathrm{mis}}$ efficiently and with high stability.
 % \right\|_2^2
 % \right],
 % \]
+%DIF > begin revised block
+\DIFaddbegin
 % where $t$ is sampled uniformly from $\{1,\dots,T\}$.
 % This formulation trains the model to approximate the conditional score of the missing
 % components, enabling the deterministic DDIM sampler to reconstruct
+\DIFaddend
+%DIF > end revised block
 % $\mathbf{x}_0^{\mathrm{mis}}$ from $\mathbf{x}_T^{\mathrm{mis}}$ in a stable, efficient, and reproducible manner.
 
 % \subsubsection{Limitations for categorical and discrete variables}
 
+%DIF > begin revised block
+\DIFaddbegin
 % Although DDIM offers an efficient and stable mechanism for continuous numerical features, its
 % formulation is fundamentally misaligned with the nature of categorical and other discrete
 % variables. Categorical values reside on a finite, unordered state space where Gaussian
@@ -843,8 +948,12 @@ $\mathbf{x}_0^{\mathrm{mis}}$ efficiently and with high stability.
 % step $\mathbf{x}_t=\sqrt{\alpha_t}\mathbf{x}_0+\sqrt{1-\alpha_t}\,\boldsymbol{\epsilon}$ is applied,
 % a one-hot vector or index embedding is mapped to a dense point in $\mathbb{R}^K$ that no longer
 % corresponds to any valid category, removing the sample from the discrete manifold at the very
+\DIFaddend
+%DIF > end revised block
 % first timestep.
 
+%DIF > begin revised block
+\DIFaddbegin
 % Because these intermediate noisy states are not legitimate categories, the reverse process becomes
 % ill-defined: the model must project ambiguous continuous vectors back onto a discrete set without
 % a meaningful geometric structure to guide the mapping. This often results in semantic drift,
@@ -852,16 +961,26 @@ $\mathbf{x}_0^{\mathrm{mis}}$ efficiently and with high stability.
 % continuous diffusion when applied to discrete domains. Moreover, DDIM relies on deterministic
 % ODE-based trajectories, which inherently assume a continuous underlying space; such trajectories
 % do not exist on discontinuous categorical manifolds without imposing continuous relaxations that
+\DIFaddend
+%DIF > end revised block
 % weaken categorical fidelity.
 
+%DIF > begin revised block
+\DIFaddbegin
 % These structural incompatibilities make continuous Gaussian diffusion unsuitable for discrete
 % variables. Effective imputation in this setting requires a diffusion process defined directly on
 % discrete probability simplexes, where transitions and denoising dynamics remain within the valid
+\DIFaddend
+%DIF > end revised block
 % state space.
 
+%DIF > begin revised block
+\DIFaddbegin
 % This motivates the second core component of MissHDD: a loopholing-based discrete diffusion
 % channel designed to model categorical and discrete variables natively. In the next section, we
 % describe how this discrete channel complements the continuous DDIM pathway to form a unified
+\DIFaddend
+%DIF > end revised block
 % heterogeneous imputation framework.
 
 
@@ -900,7 +1019,11 @@ DDIM pathway.
 % framework~\cite{loopholing}, which was originally proposed for unconditional discrete generation.
 % Loopholing diffusion defines its forward and reverse transitions directly on discrete probability
 % simplexes, ensuring that all intermediate states remain valid categorical distributions and avoiding
+%DIF > begin revised block
+\DIFaddbegin
 % the probability-mass collapse commonly observed in one-hot diffusion. In MissHDD, we extend this framework to a \emph{conditional} form tailored to tabular imputation: the reverse denoising updates are conditioned on the observed features, and the forward corruption is applied only to the missing categorical coordinates. This conditional adaptation aligns the loopholing mechanism with the imputation objective, enabling coherent conditioning across timesteps and producing stable, semantically consistent reconstructions for categorical and discrete variables.
+\DIFaddend
+%DIF > end revised block
 
 
 % Each sample from the discrete subset takes the form
@@ -908,29 +1031,45 @@ DDIM pathway.
 % \mathbf{x}_0 \in \{1,\ldots,K_1\}\times\cdots\times\{1,\ldots,K_{d_{\mathrm{cat}}}\},
 % \] with a corresponding mask $\mathbf{m}$ indicating which discrete coordinates require imputation. For each variable $x_j$, the model internally supports two equivalent representations: a one-hot vector $\mathbf{e}_{x_j} \in \{0,1\}^{K_j}$, or an integer index passed through a learnable embedding matrix. Both formats are naturally integrated in the proposed framework because loopholing diffusion operates over probability simplexes rather than Euclidean coordinates, allowing categorical distributions to be manipulated directly without continuous relaxations. In the discrete channel, we operate only on the categorical/discrete coordinates within the
 % missing subset. Let $\mathbf{x}_0^{\mathrm{mis,cat}}
+%DIF > begin revised block
+\DIFaddbegin
 % = \{ x_i : i \in \mathcal{I}_{\mathrm{mis}} \cap \mathcal{I}_{\mathrm{cat}} \}$.
+\DIFaddend
+%DIF > end revised block
 % For notational simplicity, we denote this subset simply by
 % $\mathbf{x}^{\mathrm{mis}}$.
 
 
 
 % \subsubsection{Forward Process: Loopholing Corruption on categorical and discrete Simplexes.}
+%DIF > begin revised block
+\DIFaddbegin
 % For each missing categorical and discrete coordinate, the forward diffusion step transforms the one-hot
 % representation into a smoothed categorical and discrete distribution. Specifically, denote the categorical and discrete state
+\DIFaddend
+%DIF > end revised block
 % at time $t$ as a simplex vector $\mathbf{p}_t^{(j)} \in \Delta^{K_j-1}$. The forward kernel is defined as
 % \begin{equation}
 % q(\mathbf{p}_{t}^{(j)} \mid \mathbf{p}_{t-1}^{(j)})
 % =(1-\beta_t)\mathbf{p}_{t-1}^{(j)}+\beta_t \mathbf{u}^{(j)},
 % \label{eq:forward_cat}
 % \end{equation}
+%DIF > begin revised block
+\DIFaddbegin
 % where $\mathbf{u}^{(j)}$ is the uniform distribution over categories. This loopholing mechanism
 % keeps $\mathbf{p}_t^{(j)}$ inside the simplex at all times, avoids invalid continuous vectors, and
 % ensures that the transition preserves class boundaries. For observed categories, the state is kept
+\DIFaddend
+%DIF > end revised block
 % fixed and supplied as a conditional context.
 
 % \subsubsection{Conditional Reverse Process.}
+%DIF > begin revised block
+\DIFaddbegin
 % Given corrupted categorical and discrete distributions $\mathbf{p}_t^{\mathrm{mis}}$, the reverse process predicts the
 % clean categorical and discrete distribution at step $t-1$ using a conditional classifier $f_\theta(\mathbf{p}_t^{\mathrm{mis}}, t \mid \mathbf{x}^{\mathrm{obs}})$, which outputs logits corresponding to categorical and discrete transitions. The reverse kernel adopts the
+\DIFaddend
+%DIF > end revised block
 % loopholing form:
 % \begin{equation}
 % p_\theta(\mathbf{p}_{t-1}^{(j)} \mid \mathbf{p}_t^{(j)}, \mathbf{x}^{\mathrm{obs}})
@@ -954,7 +1093,11 @@ DDIM pathway.
 % \subsubsection{Training Objective.}
 % The model is trained using a standard cross-entropy denoising objective:
 % \begin{equation}
+%DIF > begin revised block
+\DIFaddbegin
 % \min_{\theta}
+\DIFaddend
+%DIF > end revised block
 % \mathbb{E}_{\mathbf{x}_0, t}
 % \Big[
 % \mathrm{CE}\big(
@@ -965,24 +1108,41 @@ DDIM pathway.
 % \end{equation}
 % where $\mathbf{p}_0^{\mathrm{mis}}$ is the ground-truth one-hot distribution for missing categories.
 
+%DIF > begin revised block
+\DIFaddbegin
 % Through this conditional loopholing diffusion mechanism, Channel 2 enables MissHDD to perform
 % categorical and discrete imputation in a manner that preserves discrete structure, avoids invalid continuous
+\DIFaddend
+%DIF > end revised block
 % states, and complements the efficient numerical imputation provided by the continuous DDIM channel.
+%DIF > begin revised block
+\DIFaddbegin
 
 \subsection{Channel 2: Conditional Latent-Path Discrete Diffusion (LPDD) for Categorical and Discrete Variables}
+\DIFaddend
+%DIF > end revised block
 \begin{wrapfigure}{r}{0.48\textwidth}
     \vspace{-10pt}
     \centering
+%DIF > begin revised block
+\DIFaddbegin
     \includegraphics[width=0.47\textwidth]{c2.pdf}
+\DIFaddend
+%DIF > end revised block
     \caption{
+%DIF > begin revised block
+\DIFaddbegin
 Detail view of the categorical LPDD reverse update at timestep $t$. The
 diagram focuses on the feature-wise simplex embedding and latent-path update;
 the full conditioning context also includes observed values and the
 missingness mask, as defined in Eq.~\eqref{eq:lpdd_context}.
+\DIFaddend
+%DIF > end revised block
     }
     \label{fig:lpdd_overview}
     \vspace{-10pt}
 \end{wrapfigure}
+%DIF < deleted block omitted from marked-up compile-safe version
 
 
 While the continuous DDIM channel handles numerical features effectively,
@@ -1000,6 +1160,7 @@ stable structure-preserving imputation for discrete variables.
 
 
 
+%DIF < deleted block omitted from marked-up compile-safe version
 \subsubsection{Feature-wise representation and latent-path embedding}
 
 Categorical features in tabular data differ widely in semantics and vocabulary
@@ -1007,9 +1168,13 @@ size. LPDD therefore models each categorical feature $j$ on its own probability
 simplex $\Delta^{K_j-1}$ with vocabulary $V_j=\{1,\dots,K_j\}$. At diffusion
 step $t$, the state of a missing categorical variable is represented as a
 simplex vector $\mathbf{p}_t^{(j)}$, while an observed value is represented by
+%DIF > begin revised block
+\DIFaddbegin
 its one-hot vector $\mathbf{e}_{x_j}$. Thus observed categorical variables
 remain fixed conditioning anchors, whereas missing categorical variables
 evolve as simplex-valued distributions throughout the reverse trajectory.
+\DIFaddend
+%DIF > end revised block
 
 \paragraph{Feature-wise expected embeddings}
 To process categorical variables jointly with numerical features, every
@@ -1027,6 +1192,8 @@ feature semantics while ensuring compatibility with the backbone network.
 Importantly, it allows LPDD to operate over probability distributions rather
 than relaxed continuous states.
 
+%DIF > begin revised block
+\DIFaddbegin
 \paragraph{Conditional latent-path context}
 The LPDD channel is a conditional adaptation of the Loopholing idea. Instead
 of propagating only sampled categorical states, LPDD propagates distributional
@@ -1035,23 +1202,41 @@ each reverse step using the observed context. Specifically, all categorical
 embeddings, the latest numerical estimates from Channel~1, observed-value
 indicators, missingness mask embeddings, and a time embedding $\tau(t)$ are
 combined to form a unified contextual input
+\DIFaddend
+%DIF > end revised block
 
 \begin{equation}
 \mathbf{z}_t =
 \mathrm{Concat}\!\left(
+%DIF > begin revised block
+\DIFaddbegin
 \mathbf{x}^{\mathrm{obs}},
+\DIFaddend
+%DIF > end revised block
 \{\mathbf{e}^{(j)}_t\}_{j\in\mathcal{I}_{\mathrm{cat}}},
 \mathbf{x}^{\mathrm{cont}}_t,
+%DIF > begin revised block
+\DIFaddbegin
 \mathbf{m},
+\DIFaddend
+%DIF > end revised block
 \tau(t)
 \right),
+%DIF > begin revised block
+\DIFaddbegin
 \label{eq:lpdd_context}
+\DIFaddend
+%DIF > end revised block
 \end{equation}
 
+%DIF > begin revised block
+\DIFaddbegin
 where $\mathbf{x}^{\mathrm{obs}}$ denotes the observed entries used as
 conditioning anchors and $\mathbf{m}$ denotes the observed/missing indicator
 used by both channels. The context $\mathbf{z}_t$ is passed through a shared feature
 encoder to produce a latent hidden state:
+\DIFaddend
+%DIF > end revised block
 
 \begin{equation}
 \mathbf{h}_t = f_{\theta}^{\mathrm{backbone}}(\mathbf{z}_t).
@@ -1060,6 +1245,8 @@ encoder to produce a latent hidden state:
 
 \paragraph{Latent-path role of $\mathbf{h}_t$}
 In LPDD, $\mathbf{h}_t$ serves as the \emph{latent path} that carries
+%DIF > begin revised block
+\DIFaddbegin
 conditional information across timesteps. Unlike the discrete state
 $\mathbf{p}_t^{(j)}$, which is repeatedly corrupted toward a uniform
 distribution, the latent state $\mathbf{h}_t$ preserves the current
@@ -1068,13 +1255,19 @@ estimates, and the missingness pattern. This is the tabular conditional
 counterpart of the Loopholing mechanism: the model avoids collapsing
 intermediate categorical uncertainty into sampled one-hot states and instead
 uses the latent pathway to guide the next simplex update.
+\DIFaddend
+%DIF > end revised block
 
 This separation between the \emph{discrete path} $\mathbf{p}_t$ and the
+%DIF > begin revised block
+\DIFaddbegin
 \emph{continuous latent path} $\mathbf{h}_t$ is central to LPDD. It also
 clarifies the conditioning mechanism: the categorical reverse transition is
 not independent of the rest of the row, but is conditioned on observed
 features, the mask, and the latest continuous-channel estimates at every
 reverse diffusion step.
+\DIFaddend
+%DIF > end revised block
 
 
 % \subsubsection{Forward diffusion: simplex-preserving corruption}
@@ -1132,8 +1325,12 @@ reverse diffusion step.
 
 % followed by normalization. This latent-path update:
 
+%DIF > begin revised block
+\DIFaddbegin
 % 1. preserves the simplex constraint at every timestep;
 % 2. incorporates observed categorical features as conditional guidance through the backbone;
+\DIFaddend
+%DIF > end revised block
 % 3. ensures reverse denoising remains aligned with the semantics of the forward corruption.
 
 % At $t=0$, the model produces a discrete imputation via
@@ -1188,7 +1385,11 @@ values remain fixed and act as conditioning anchors throughout diffusion.
 
 Given the corrupted categorical states $\mathbf{p}_t^{\mathrm{mis}}$, we first
 form the contextual representation $\mathbf{z}_t$ and latent-path state
+%DIF > begin revised block
+\DIFaddbegin
 (Eq.\ref{eq:project}) as described
+\DIFaddend
+%DIF > end revised block
 above. A feature-wise projection head then maps $\mathbf{h}_t$ to logits for
 each categorical variable:
 \begin{equation}
@@ -1198,15 +1399,29 @@ each categorical variable:
 \end{equation}
 
 LPDD mirrors the form of the forward kernel to construct a
+%DIF > begin revised block
+\DIFaddbegin
 simplex-consistent reverse transition. For feature $j$, the unnormalised
 reverse update is
+\DIFaddend
+%DIF > end revised block
 \begin{equation}
+%DIF > begin revised block
+\DIFaddbegin
 \tilde{\mathbf{p}}_{t-1}^{(j)} =
+\DIFaddend
+%DIF > end revised block
 \exp\!\big(\boldsymbol{\ell}_t^{(j)}\big)
 \odot
 \Big((1-\beta_t)\,\mathbf{p}_t^{(j)} + \beta_t\,\mathbf{u}^{(j)}\Big),
+%DIF > begin revised block
+\DIFaddbegin
 \label{eq:lpdd_unnormalized}
+\DIFaddend
+%DIF > end revised block
 \end{equation}
+%DIF > begin revised block
+\DIFaddbegin
 and the normalized reverse state is
 \begin{equation}
 \mathbf{p}_{t-1}^{(j)}
@@ -1220,6 +1435,8 @@ and the normalized reverse state is
 where $\Pi_{\Delta}$ denotes projection by positive normalization onto the
 probability simplex, and $\varepsilon$ is a small numerical constant used to
 avoid zero denominators. In other words, the forward kernel
+\DIFaddend
+%DIF > end revised block
 \((1-\beta_t)\mathbf{p}_t^{(j)} + \beta_t\mathbf{u}^{(j)}\) defines how mass
 can move within the simplex, while the logits $\boldsymbol{\ell}_t^{(j)}$
 derived from $\mathbf{h}_t$ indicate where probability should
@@ -1227,6 +1444,8 @@ concentrate given the global context. This coupling makes the reverse update
 depend jointly on the current simplex state $\mathbf{p}_t^{(j)}$ and the
 latent path $\mathbf{h}_t$.
 
+%DIF > begin revised block
+\DIFaddbegin
 This update is deterministic once the network parameters and conditioning
 context are fixed. It should therefore be interpreted as a conditional
 simplex-valued denoising operator rather than as a stochastic categorical
@@ -1238,12 +1457,18 @@ positive; and the $L_1$ normalization maps the result back to
 $\Delta^{K_j-1}$. Thus LPDD preserves non-negativity and unit mass at every
 reverse step, which prevents invalid categorical states during denoising.
 
+\DIFaddend
+%DIF > end revised block
 At $t=0$, the model produces a discrete imputation via
 \[
 x^{(j)}_{\text{imp}} = \arg\max_k [\mathbf{p}_0^{(j)}]_k,
 \]
+%DIF > begin revised block
+\DIFaddbegin
 which is a constant-time decoding step. Thus final categorical decoding adds
 negligible cost relative to the reverse updates.
+\DIFaddend
+%DIF > end revised block
 
 
 
@@ -1301,6 +1526,8 @@ learns a conditional discrete score directly on the probability simplex,
 enabling the reverse diffusion process to reconstruct categorical variables in
 a stable and structure-preserving manner.
 
+%DIF > begin revised block
+\DIFaddbegin
 The complete MissHDD training objective combines the continuous DDIM loss and
 the LPDD categorical loss:
 \begin{equation}
@@ -1319,6 +1546,8 @@ both losses update the shared contextual encoder, while the continuous noise
 head and categorical projection heads receive their corresponding
 type-specific gradients.
 
+\DIFaddend
+%DIF > end revised block
 
 % Together with the deterministic DDIM channel for numerical features, LPDD
 % provides a principled discrete counterpart that maintains categorical validity
@@ -1327,11 +1556,19 @@ type-specific gradients.
 
 \begin{figure}[t]
     \centering
+%DIF > begin revised block
+\DIFaddbegin
     \includegraphics[width=0.8\linewidth]{missddim2.pdf}
+\DIFaddend
+%DIF > end revised block
     \caption{
+%DIF > begin revised block
+\DIFaddbegin
     Self-masking strategy used in MissHDD.
     During training, a portion of observed entries is randomly masked to create
     pseudo-missing targets. The remaining entries serve as conditioning information for
+\DIFaddend
+%DIF > end revised block
     both the continuous and discrete diffusion channels.
     }
     \label{fig:fig_self_masking}
@@ -1344,7 +1581,11 @@ only a subset of entries is observed, and preprocessing them with external
 imputers (e.g., mean filling~\cite{mean} or K-NN~\cite{knn} method) introduces bias before the diffusion
 model is learned. To avoid such artifacts, MissHDD adopts a \textbf{self-masking}
 strategy that enables both diffusion channels to learn directly from partially
+%DIF > begin revised block
+\DIFaddbegin
 observed samples. For each training input, the original missingness pattern is preserved to
+\DIFaddend
+%DIF > end revised block
 respect the true underlying mechanism. Additionally, a small random subset of
 the observed entries is temporarily masked to create pseudo-missing targets,
 while the remaining observed values are used as conditioning information.
@@ -1354,7 +1595,11 @@ $
 \mathbf{m}_{\mathrm{train}} = \mathbf{m} \;\lor\; \tilde{\mathbf{m}},
 $
 so that pseudo-missing entries are treated in the same way as true missing
+%DIF > begin revised block
+\DIFaddbegin
 values during both the forward and reverse diffusion steps. This procedure provides two benefits. First, it increases the amount of
+\DIFaddend
+%DIF > end revised block
 supervised signal available for learning the conditional distribution
 $p(\mathbf{x}_0^{\mathrm{mis}} \mid \mathbf{x}_0^{\mathrm{obs}})$ without
 requiring fully observed samples. Second, it regularizes both the continuous
@@ -1369,6 +1614,8 @@ conditioning pattern.
 
 \subsection{Joint Reconstruction}
 
+%DIF > begin revised block
+\DIFaddbegin
 The two diffusion channels in MissHDD do not operate independently. During
 training, they are jointly optimized with a shared contextual encoder that
 receives synchronized forward-corrupted continuous and categorical states. This
@@ -1380,11 +1627,15 @@ are embedded into $\mathbf{z}_t$, the DDIM update is applied to missing
 numerical coordinates, the LPDD update is applied to missing categorical
 simplexes, and the updated states are fed back into the next reverse step. When
 $t=0$ is reached, the continuous DDIM channel outputs the deterministic
+\DIFaddend
+%DIF > end revised block
 numerical reconstruction $\hat{\mathbf{x}}^{\mathrm{cont}}$, and the LPDD
 channel yields categorical distributions whose MAP assignments form
 $\hat{\mathbf{x}}^{\mathrm{cat}}$. The final imputed sample is obtained by $ \hat{\mathbf{x}} = \hat{\mathbf{x}}^{\mathrm{cont}}\cup \hat{\mathbf{x}}^{\mathrm{cat}},$ with the union respecting the original feature order. Because both channels evolve under the same conditioning signals, the result is a single coherent estimate of $p(\mathbf{x}^{\mathrm{mis}} \mid \mathbf{x}^{\mathrm{obs}})$ rather than two
 independent imputations, ensuring that cross-type dependencies are preserved.
 
+%DIF > begin revised block
+\DIFaddbegin
 \begin{algorithm}[t]
 \caption{MissHDD joint training with self-masking}
 \label{alg:training}
@@ -1418,7 +1669,7 @@ independent imputations, ensuring that cross-type dependencies are preserved.
 \algsmall
 \begin{algorithmic}[1]
 \Require Incomplete input $\mathbf{x}^{\mathrm{obs}}$, mask $\mathbf{m}$, schedule $\tau_S>\cdots>\tau_0=0$
-\State Initialize missing continuous entries with a fixed $\mathcal{N}(\mathbf{0},\mathbf{I})$ and missing categorical simplexes with $\mathbf{u}^{(j)}$
+\State Initialize missing continuous entries with a fixed $\mathcal{N}(\mathbf{0},\mathbf{I})$ latent and missing categorical simplexes with $\mathbf{u}^{(j)}$
 \For{$s=S,\ldots,1$}
     \State $\mathbf{z}_{\tau_s}\gets f_{\theta_{\mathrm{sh}}}(\mathbf{x}^{\mathrm{obs}},\mathbf{m},
     \mathbf{x}^{\mathrm{cont}}_{\tau_s},\mathbf{p}^{\mathrm{cat}}_{\tau_s},\tau_s)$
@@ -1436,32 +1687,50 @@ independent imputations, ensuring that cross-type dependencies are preserved.
 \end{algorithmic}
 \end{algorithm}
 
+\DIFaddend
+%DIF > end revised block
 
 
 \section{Experimental Setup}
 
+%DIF > begin revised block
+\DIFaddbegin
 % We evaluate \texttt{MissHDD} by imputation accuracy, downstream task utility,
 % sampling efficiency, and stability.
+\DIFaddend
+%DIF > end revised block
 
 % Code will be available at: \url{https://github.com/echoid/MissDDIM}
 
 % % \subsection{Experimental Setup}
 \subsection{Datasets}
 
+%DIF > begin revised block
+\DIFaddbegin
 We evaluate \texttt{MissHDD} on fourteen heterogeneous tabular datasets from
 the UCI Machine Learning Repository\footnote{\url{https://archive.ics.uci.edu/}}
 and Kaggle\footnote{\url{https://www.kaggle.com/}}. Table~\ref{tab:dataset_summary}
 summarizes their sample sizes, feature types, labels, and missing rates.
+\DIFaddend
+%DIF > end revised block
 
 We group our evaluation datasets into two categories:
 
 \textbf{Category 1: Synthetic Missingness on Fully Observed Data.}
+%DIF > begin revised block
+\DIFaddbegin
 This category contains eight complete datasets with synthetic MCAR, MAR, and
 MNAR masks, enabling controlled evaluation under known missingness mechanisms.
+\DIFaddend
+%DIF > end revised block
 
 \textbf{Category 2: Naturally Incomplete Real-World Data.}
+%DIF > begin revised block
+\DIFaddbegin
 This category includes six originally incomplete datasets with unknown or mixed
 missingness, reflecting practical data collection conditions.
+\DIFaddend
+%DIF > end revised block
 
 
 
@@ -1469,9 +1738,13 @@ missingness, reflecting practical data collection conditions.
 
 \subsection{Synthetic Incomplete Data Generation}
 
+%DIF > begin revised block
+\DIFaddbegin
 We introduce synthetic \textbf{MCAR}, \textbf{MAR}, and \textbf{MNAR} masks at
 30\%, 50\%, and 70\% missingness using \texttt{MissMecha}~\cite{missmecha},
 with identical masks across all methods.
+\DIFaddend
+%DIF > end revised block
 
 \paragraph*{MCAR}
 Missingness is independent of both observed and unobserved variables, with
@@ -1490,8 +1763,12 @@ self-dependent omission patterns commonly found in practice.
 
 
 \begin{table}[t]
+%DIF > begin revised block
+\DIFaddbegin
 \caption{Benchmark datasets. Cate. and Cont. denote categorical and continuous
 features; missing rates apply only to originally incomplete datasets.}
+\DIFaddend
+%DIF > end revised block
 \label{tab:dataset_summary}
 \centering
 \resizebox{0.78\linewidth}{!}{%
@@ -1501,6 +1778,8 @@ features; missing rates apply only to originally incomplete datasets.}
 \midrule
 \textbf{Dataset} & \textbf{Samples} & \textbf{Cate.} & \textbf{Cont.} & \textbf{Label} & \textbf{Missing Rate} \\
 \midrule
+%DIF > begin revised block
+\DIFaddbegin
 Adult        & 48,842 & 7  & 7  & 2 classes      & -- \\
 Banknote     & 1,372  & 0  & 4  & 2 classes      & -- \\
 Breast       & 2,869  & 4  & 0  & 2 classes      & -- \\
@@ -1509,6 +1788,8 @@ California   & 20,640 & 0  & 8  & Regression     & -- \\
 E-commerce   & 10,999 & 7  & 3  & Regression     & -- \\
 Student      &   649  & 11 & 2  & Regression     & -- \\
 Yacht        &   308  & 0  & 6  & Regression     & -- \\
+\DIFaddend
+%DIF > end revised block
 \midrule
 \multicolumn{6}{c}{\textit{Category 2: Naturally Incomplete Real-World Data}} \\
 \midrule
@@ -1529,28 +1810,44 @@ Wiscon    & 699 & 9  & 0  & 2 classes  & 0.25\%  \\
 
 \subsection{Baselines}
 
+%DIF > begin revised block
+\DIFaddbegin
 % We compare \texttt{MissHDD} with statistical, deep generative, and
 % diffusion-based imputers.
+\DIFaddend
+%DIF > end revised block
 
 \paragraph{Statistical Baselines}
 We compare against classical imputers including \texttt{Mean/Mode}
 substitution, \texttt{MICE}~\cite{mice}, and \texttt{MissForest}~\cite{missforest}.
+%DIF > begin revised block
+\DIFaddbegin
 These lightweight methods provide standard non-generative reference points.
+\DIFaddend
+%DIF > end revised block
 
 \paragraph{Deep Generative Models}
 We include two representative latent-variable models: \texttt{GAIN}~\cite{yoon2018gain},
 a GAN-based imputer trained with adversarial learning, and \texttt{MIWAE}~\cite{mattei2019miwae},
 a VAE-based method optimized with an importance-weighted objective.
+%DIF > begin revised block
+\DIFaddbegin
 Both capture nonlinear dependencies but rely on continuous or embedded
 categorical representations.
+\DIFaddend
+%DIF > end revised block
 
 \paragraph{Diffusion-based Models}
 We evaluate three diffusion-based imputers: \texttt{CSDI}~\cite{csdi}, its
 tabular extension \texttt{TabCSDI}~\cite{tabcsdi}, and \texttt{MissDiff}~\cite{missdiff}.
+%DIF > begin revised block
+\DIFaddbegin
 Diffusion baselines use their reported/default reverse schedules with 100
 stochastic samples per instance, aggregated by the median. \texttt{MissHDD}
 uses deterministic one-pass imputation through its continuous DDIM and LPDD
 channels.
+\DIFaddend
+%DIF > end revised block
 
 
 % \subsection{Evaluation Metrics}
@@ -1563,13 +1860,21 @@ channels.
 % \frac{1}{d}\sum_{i \in \mathcal{I}_{\mathrm{cont}}} |\mathbf{x}_{i} - \hat{\mathbf{x}}_{i}|^{2} + \sum_{i \in \mathcal{I}_{\mathrm{cat}}} \mathbb{I}(\mathbf{x}_{i} \neq \hat{\mathbf{x}}_{i})^{2}}
 % %\text{ImpErr} = \frac{1}{D} \sum_{d=1}^{D} \mathrm{err}(d),
 % \]
+%DIF > begin revised block
+\DIFaddbegin
 % %where the per-feature error $\mathrm{err}(d)$ depends on the variable type.
+\DIFaddend
+%DIF > end revised block
 
 % %\paragraph{Continuous variables}
 % %For numerical features, we report the \textbf{ Root Mean Squared Error (RMSE)}:
 % %\begin{equation}
 % %\mathrm{err}(d)
+%DIF > begin revised block
+\DIFaddbegin
 % %=
+\DIFaddend
+%DIF > end revised block
 % %\sqrt{
 % %\frac{1}{n_d}\sum_{i \in \mathcal{M}_d} (X_{id} - \hat{X}_{id})^{2}
 % %}
@@ -1661,7 +1966,11 @@ M_{j,i}\,\mathbb{I}(x_{j,i} \neq \hat{x}_{j,i}),
 \]
 where \(\mathbb{I}(\cdot)\) is the indicator function.
 
+%DIF > begin revised block
+\DIFaddbegin
 \paragraph{ImpErr}
+\DIFaddend
+%DIF > end revised block
 To aggregate continuous and categorical errors into a single measure while
 preserving the heterogeneous dimensionality of the feature space, we define
 the Mixed Imputation Error (ImpErr) as a dimension-weighted combination:
@@ -1677,16 +1986,24 @@ w_{\mathrm{cont}} \cdot \mathrm{RMSE}_{\mathrm{cont}}
 +
 w_{\mathrm{cat}} \cdot \mathrm{CatErr}.
 \]
+%DIF > begin revised block
+\DIFaddbegin
 This dimension-weighted metric reflects each dataset's continuous/categorical
 composition. Since all features are normalized to \([0,1]\), lower ImpErr
 indicates better mixed-type reconstruction.
+\DIFaddend
+%DIF > end revised block
 
 
 \subsubsection{Downstream Evaluation}
 
+%DIF > begin revised block
+\DIFaddbegin
 We assess downstream utility using SVM classification (F1, accuracy), SVM
 regression (MAE), and K-means clustering (NMI, ARI). Results are reported over
 five-fold cross-validation, with standard deviations where available.
+\DIFaddend
+%DIF > end revised block
 \subsection{Implementation Details}
 
 MissHDD is implemented with two diffusion backbones: a continuous DDIM
@@ -1695,6 +2012,8 @@ channel for categorical features. Both channels operate on the same
 self-masked input and share the observed context throughout training and
 sampling.
 
+%DIF > begin revised block
+\DIFaddbegin
 \textbf{Preprocessing.}
 Continuous features are normalized to the $[0,1]$ range using statistics
 estimated from the training split only. Categorical variables are encoded as
@@ -1705,7 +2024,11 @@ missingness experiments, missing masks are generated after the train,
 validation, and test split so that evaluation entries remain unseen during
 training.
 
+\DIFaddend
+%DIF > end revised block
 \textbf{Continuous channel.}
+%DIF > begin revised block
+\DIFaddbegin
 The continuous branch follows the configuration of our public MissDDIM
 implementation (\url{https://github.com/echoid/MissDDIM}), which provides the
 conditional DDIM imputation backbone and self-masking training routine. The
@@ -1717,9 +2040,13 @@ time-wise and feature-wise Transformer encoders with GELU activations. The
 continuous diffusion process uses 100 training steps with a quadratic
 $\beta$ schedule from $10^{-4}$ to $0.5$. At inference, DDIM step skipping is
 used to evaluate reverse schedules with 100, 50, and 20 steps.
+\DIFaddend
+%DIF > end revised block
 
 \textbf{Discrete channel.}
 Categorical features are embedded through feature-specific embedding
+%DIF > begin revised block
+\DIFaddbegin
 matrices and mapped to feature-wise simplex representations. The LPDD channel
 is adapted from the public Loopholing discrete diffusion implementation~\cite{loopholing}. In the original
 implementation, the latent pathway is coupled with a DiT backbone for
@@ -1732,8 +2059,12 @@ observed values, missingness masks, the timestep embedding, and the current
 continuous-channel estimates. This design preserves valid categorical
 simplex states while allowing the discrete trajectory to remain synchronized
 with the continuous DDIM channel.
+\DIFaddend
+%DIF > end revised block
 
 \textbf{Training.}
+%DIF > begin revised block
+\DIFaddbegin
 Both channels are trained jointly using the objective in
 Eq.~\eqref{eq:joint_loss}. The continuous channel follows the MissDDIM
 training configuration (Adam optimizer, learning rate $5\times10^{-4}$,
@@ -1746,9 +2077,13 @@ we did not perform a full $\lambda_{\mathrm{cat}}$ ablation. The same self-mask
 is supplied to both channels, so gradients from continuous and categorical
 losses are propagated through the shared contextual encoder in each
 optimization step.
+\DIFaddend
+%DIF > end revised block
 
 \textbf{Sampling.}
 MissHDD performs 20-step deterministic DDIM updates for continuous variables
+%DIF > begin revised block
+\DIFaddbegin
 and 20-step LPDD reverse transitions for categorical variables. As in DDIM,
 the reverse update is deterministic once the initial latent state is fixed. In
 our evaluation, the continuous latent state is generated under the fixed global
@@ -1770,6 +2105,8 @@ computing system using the \texttt{gpuvolta} queue with NVIDIA Tesla V100
 CUDA toolkit~12.4.
 We will release the source code, configuration files, fold definitions, and
 mask-generation scripts to support reproducibility.
+\DIFaddend
+%DIF > end revised block
 
 
 
@@ -1779,11 +2116,23 @@ mask-generation scripts to support reproducibility.
 
 % \paragraph{Channel 1: Continuous diffusion}
 % The continuous channel adopts a feature-wise Transformer encoder based on the non-temporal
+%DIF > begin revised block
+\DIFaddbegin
 % TabCSDI architecture~\citep{tabcsdi}.
+\DIFaddend
+%DIF > end revised block
 % We retain only the feature-attention encoder and residual MLP blocks, which together
+%DIF > begin revised block
+\DIFaddbegin
 % parameterize the noise-prediction network $\epsilon_\theta$.
+\DIFaddend
+%DIF > end revised block
 % Inputs include the noisy continuous coordinates, a learned timestep embedding, and a mask
+%DIF > begin revised block
+\DIFaddbegin
 % embedding indicating observed versus missing positions.
+\DIFaddend
+%DIF > end revised block
 % This network supports deterministic DDIM sampling during inference.
 
 % \paragraph{Channel 2: Conditional Latent-Path Discrete Diffusion}
@@ -1793,31 +2142,59 @@ mask-generation scripts to support reproducibility.
 
 % \paragraph{Joint Reconstruction}
 % Both channels receive identical conditioning signals consisting of observed feature values,
+%DIF > begin revised block
+\DIFaddbegin
 % feature embeddings, and the binary mask.
+\DIFaddend
+%DIF > end revised block
 % Conditioning is incorporated through cross-attention, allowing continuous and discrete channels
+%DIF > begin revised block
+\DIFaddbegin
 % to utilize the same partial observations.
+\DIFaddend
+%DIF > end revised block
 % During sampling, updated estimates from each channel are fed back to the shared conditioning module, enabling joint consistency between variable types.
 
 % \paragraph{Self-masking}
 % During training, we augment the original missing mask by randomly masking a subset of observed
+%DIF > begin revised block
+\DIFaddbegin
 % entries to form pseudo-missing targets.
+\DIFaddend
+%DIF > end revised block
 % The same self-masked input is supplied to both channels, enabling them to learn the conditional
 % distribution \( p(\mathbf{x}^{\mathrm{mis}} \mid \mathbf{x}^{\mathrm{obs}}) \) without relying on
 % external imputers.
 
 % \paragraph{Training settings}
 % Both channels are trained jointly using AdamW (learning rate $1\times 10^{-4}$, batch size 64,
+%DIF > begin revised block
+\DIFaddbegin
 % weight decay $10^{-4}$).
 % We use $T=100$ diffusion steps during training.
+\DIFaddend
+%DIF > end revised block
 % Continuous noise levels follow a cosine $\beta_t$ schedule, while discrete transitions follow a
+%DIF > begin revised block
+\DIFaddbegin
 % linearly annealed loopholing kernel.
+\DIFaddend
+%DIF > end revised block
 % Training proceeds for 300 epochs with early stopping based on validation error.
 
 % \paragraph{Sampling}
 % At inference time, MissHDD uses 20-step deterministic DDIM updates for continuous variables
+%DIF > begin revised block
+\DIFaddbegin
 % and 20-step reverse loopholing transitions for discrete variables.
+\DIFaddend
+%DIF > end revised block
 % Final outputs are obtained by taking $\hat{\mathbf{x}}^{\mathrm{cont}}_0$ from the last DDIM
+%DIF > begin revised block
+\DIFaddbegin
 % update and $\arg\max$ over discrete logits $\hat{\mathbf{p}}_{0}$.
+\DIFaddend
+%DIF > end revised block
 % The reconstructed continuous and discrete variables are decoded and combined into the final
 % imputed sample.
 
@@ -1853,8 +2230,12 @@ mask-generation scripts to support reproducibility.
 %     \end{subfigure}
 
 %     \caption{
+%DIF > begin revised block
+\DIFaddbegin
 %         Imputation accuracy under three missingness mechanisms:
 %         \textbf{MCAR}, \textbf{MAR}, and \textbf{MNAR}.
+\DIFaddend
+%DIF > end revised block
 %         Each panel presents dataset-wise ImpErr curves (left) and the aggregated error
 %         distribution across all datasets (right) at varying missing rates.
 %     }
@@ -1864,7 +2245,11 @@ mask-generation scripts to support reproducibility.
 
 \begin{figure*}[ht!]
     \centering
+%DIF > begin revised block
+\DIFaddbegin
 
+\DIFaddend
+%DIF > end revised block
     %---------------- MCAR ----------------%
     \begin{subfigure}{0.9\linewidth}
         \centering
@@ -1892,7 +2277,11 @@ mask-generation scripts to support reproducibility.
     \end{subfigure}
 
     \caption{
+%DIF > begin revised block
+\DIFaddbegin
         Imputation accuracy under three missingness mechanisms:
+\DIFaddend
+%DIF > end revised block
         \textbf{MCAR}, \textbf{MAR}, and \textbf{MNAR}.
     }
     \label{fig:rmse_missingness_all}
@@ -1900,7 +2289,11 @@ mask-generation scripts to support reproducibility.
 
 % \begin{figure*}[ht!]
 %     \centering
+%DIF > begin revised block
+\DIFaddbegin
 
+\DIFaddend
+%DIF > end revised block
 %     %---------------- MCAR ----------------%
 %     \begin{subfigure}{0.9\linewidth}
 %         \centering
@@ -1928,9 +2321,17 @@ mask-generation scripts to support reproducibility.
 %     \end{subfigure}
 
 %     \caption{
+%DIF > begin revised block
+\DIFaddbegin
 %         Imputation accuracy under three missingness mechanisms:
+\DIFaddend
+%DIF > end revised block
 %         \textbf{MCAR}, \textbf{MAR}, and \textbf{MNAR}.
+%DIF > begin revised block
+\DIFaddbegin
 %         Each subplot displays dataset-wise ImpErr curves (left) and
+\DIFaddend
+%DIF > end revised block
 %         aggregated error distributions (right) across missing rates.
 %     }
 %     \label{fig:rmse_missingness_all}
@@ -1943,6 +2344,8 @@ mask-generation scripts to support reproducibility.
 
 
 \subsection{Imputation Accuracy}
+%DIF > begin revised block
+\DIFaddbegin
 We evaluate imputation quality under \textbf{MCAR}, \textbf{MAR}, and
 \textbf{MNAR} missingness at rates of 10\%, 30\%, 50\%, and 70\%.
 Figures~\ref{fig:rmse_mcar}, \ref{fig:rmse_mar}, and~\ref{fig:rmse_mnar}
@@ -1953,6 +2356,8 @@ Classical and latent-variable baselines degrade more sharply, while diffusion
 baselines remain sensitive to categorical features. \texttt{MissHDD} achieves
 lower ImpErr across mechanisms and rates, with lower median error and smaller
 variance in the aggregated boxplots.
+\DIFaddend
+%DIF > end revised block
 
 
 
@@ -1962,9 +2367,13 @@ variance in the aggregated boxplots.
     \centering
     \includegraphics[width=1\linewidth]{evaluate_miss_mechanisms_boxplots.pdf}
     \caption{
+%DIF > begin revised block
+\DIFaddbegin
         Aggregated imputation performance across all datasets under the
         three missingness mechanisms: \textbf{MCAR}, \textbf{MAR}, and \textbf{MNAR}.
         Each boxplot summarizes the distribution of ImpErr across missing rates
+\DIFaddend
+%DIF > end revised block
         and datasets; lower values indicate better imputation quality.
     }
     \label{fig:miss_mechanism_boxplots}
@@ -1974,23 +2383,49 @@ variance in the aggregated boxplots.
 % Downstream F1
 \begin{table*}[!t]
 \centering
+%DIF > begin revised block
+\DIFaddbegin
 \caption{Category~1 classification F1~($\uparrow$), mean $\pm$ std. \best{Bold}
 and \secondbest{underline} mark best and second-best scores.}
+\DIFaddend
+%DIF > end revised block
 \label{tab:classification_results}
 \resizebox{\textwidth}{!}{
+%DIF > begin revised block
+\DIFaddbegin
 \begin{tabular}{l|ccc|ccc|}
+\DIFaddend
+%DIF > end revised block
 \hline
+%DIF > begin revised block
+\DIFaddbegin
 \textbf{Method}  & \multicolumn{3}{c|}{\textbf{Adult}} & \multicolumn{3}{c|}{\textbf{Banknote}} \\
+\DIFaddend
+%DIF > end revised block
 \hline
+%DIF > begin revised block
+\DIFaddbegin
 \textbf{Rate} & 30\% & 50\% & 70\% & 30\% & 50\% & 70\% \\
+\DIFaddend
+%DIF > end revised block
 \hline
+%DIF > begin revised block
+\DIFaddbegin
 Mean & \meanstd{0.4966}{0.0084} & \meanstd{0.4750}{0.0084} & \meanstd{0.4440}{0.0095} & \meanstd{0.9000}{0.0123} & \meanstd{0.7870}{0.0147} & \meanstd{0.6703}{0.0195} \\
 MICE & \meanstd{0.6734}{0.0117} & \meanstd{0.6447}{0.0145} & \meanstd{0.6218}{0.0290} & \meanstd{0.9416}{0.0104} & \meanstd{0.8414}{0.0133} & \meanstd{0.7512}{0.0126} \\
 MissForest & \meanstd{0.6971}{0.0226} & \meanstd{0.6517}{0.0264} & \best{\meanstd{0.6347}{0.0264}} & \secondbest{\meanstd{0.9517}{0.0095}} & \meanstd{0.8727}{0.0103} & \meanstd{0.7821}{0.0128} \\
+\DIFaddend
+%DIF > end revised block
 \hline
+%DIF > begin revised block
+\DIFaddbegin
 GAIN & \meanstd{0.6048}{0.0124} & \meanstd{0.5775}{0.0225} & \meanstd{0.5441}{0.0295} & \meanstd{0.9217}{0.0235} & \meanstd{0.8725}{0.0257} & \meanstd{0.7957}{0.0324} \\
 MIWAE & \meanstd{0.6941}{0.0104} & \meanstd{0.6327}{0.0197} & \meanstd{0.6014}{0.0222} & \meanstd{0.9226}{0.0201} & \meanstd{0.8937}{0.0250} & \meanstd{0.8125}{0.0330} \\
+\DIFaddend
+%DIF > end revised block
 \hline
+%DIF > begin revised block
+\DIFaddbegin
 CSDI & \meanstd{0.6827}{0.0127} & \meanstd{0.6424}{0.0134} & \meanstd{0.6218}{0.0172} & \meanstd{0.9358}{0.0159} & \meanstd{0.8867}{0.0251} & \meanstd{0.8025}{0.0297} \\
 TabCSDI & \secondbest{\meanstd{0.7214}{0.0198}} & \best{\meanstd{0.6851}{0.0211}} & \secondbest{\meanstd{0.6318}{0.0224}} & \best{\meanstd{0.9527}{0.0126}} & \secondbest{\meanstd{0.9014}{0.0175}} & \secondbest{\meanstd{0.8657}{0.0214}} \\
 MissDiff & \meanstd{0.7046}{0.0126} & \meanstd{0.6711}{0.0154} & \meanstd{0.6247}{0.0157} & \meanstd{0.9416}{0.1140} & \meanstd{0.8867}{0.1645} & \meanstd{0.8237}{0.0201} \\
@@ -2017,31 +2452,63 @@ CSDI & \meanstd{0.7305}{0.0009} & \meanstd{0.7030}{0.0011} & \meanstd{0.5177}{0.
 TabCSDI & \secondbest{\meanstd{0.7730}{0.0014}} & \meanstd{0.7278}{0.0017} & \best{\meanstd{0.5282}{0.0018}} & \secondbest{\meanstd{0.9049}{0.0014}} & \secondbest{\meanstd{0.8471}{0.0019}} & \meanstd{0.4467}{0.0022} \\
 MissDiff & \meanstd{0.7445}{0.0011} & \secondbest{\meanstd{0.7293}{0.0016}} & \meanstd{0.5185}{0.0018} & \meanstd{0.8503}{0.0015} & \meanstd{0.8242}{0.0019} & \secondbest{\meanstd{0.4541}{0.0021}} \\
 MissHDD & \best{\meanstd{0.7873}{0.0008}} & \best{\meanstd{0.7524}{0.0014}} & \meanstd{0.5202}{0.0017} & \best{\meanstd{0.9117}{0.0012}} & \best{\meanstd{0.8559}{0.0014}} & \best{\meanstd{0.4581}{0.0017}} \\
+\DIFaddend
+%DIF > end revised block
 \hline
 \end{tabular}
 }
 \end{table*}
+%DIF > begin revised block
+\DIFaddbegin
 
+\DIFaddend
+%DIF > end revised block
 % Downstream MAE
 \begin{table*}[!t]
 \centering
+%DIF > begin revised block
+\DIFaddbegin
 \caption{Category~1 regression MAE~($\downarrow$), mean $\pm$ std. \best{Bold}
 and \secondbest{underline} mark best and second-best scores.}
+\DIFaddend
+%DIF > end revised block
 \label{tab:regression_results}
 \resizebox{\textwidth}{!}{
+%DIF > begin revised block
+\DIFaddbegin
 \begin{tabular}{l|ccc|ccc|}
+\DIFaddend
+%DIF > end revised block
 \hline
+%DIF > begin revised block
+\DIFaddbegin
 \textbf{Method}  & \multicolumn{3}{c|}{\textbf{Yacht}} & \multicolumn{3}{c|}{\textbf{E-commerce}} \\
+\DIFaddend
+%DIF > end revised block
 \hline
+%DIF > begin revised block
+\DIFaddbegin
 \textbf{Rate} & 30\% & 50\% & 70\% & 30\% & 50\% & 70\% \\
+\DIFaddend
+%DIF > end revised block
 \hline
+%DIF > begin revised block
+\DIFaddbegin
 Mean & \meanstd{1.1748}{0.0124} & \meanstd{1.3966}{0.0119} & \meanstd{1.5177}{0.0123} & \meanstd{1.1264}{0.0124} & \meanstd{1.2585}{0.0147} & \meanstd{1.3947}{0.0155} \\
 MICE & \meanstd{1.3032}{0.0114} & \meanstd{1.2830}{0.0104} & \meanstd{1.5076}{0.0117} & \meanstd{1.2040}{0.0135} & \meanstd{1.2180}{0.0157} & \meanstd{1.4373}{0.0158} \\
 MissForest & \meanstd{1.3681}{0.0248} & \meanstd{1.3306}{0.0255} & \meanstd{1.6776}{0.0201} & \meanstd{1.2887}{0.0147} & \meanstd{1.2245}{0.0142} & \meanstd{1.5723}{0.0159} \\
+\DIFaddend
+%DIF > end revised block
 \hline
+%DIF > begin revised block
+\DIFaddbegin
 GAIN & \meanstd{1.0437}{0.0234} & \meanstd{1.2341}{0.0215} & \meanstd{1.3778}{0.0214} & \meanstd{0.9787}{0.0155} & \meanstd{1.1108}{0.0124} & \meanstd{1.2736}{0.0164} \\
 MIWAE & \meanstd{1.0460}{0.0184} & \meanstd{1.2262}{0.0177} & \meanstd{1.2757}{0.0175} & \meanstd{0.9245}{0.0164} & \meanstd{1.1464}{0.0145} & \meanstd{1.1795}{0.0165} \\
+\DIFaddend
+%DIF > end revised block
 \hline
+%DIF > begin revised block
+\DIFaddbegin
 CSDI & \meanstd{0.8049}{0.0241} & \meanstd{1.0274}{0.0207} & \meanstd{1.0349}{0.0195} & \meanstd{0.7296}{0.0145} & \meanstd{0.9554}{0.0136} & \meanstd{0.8932}{0.0149} \\
 TabCSDI & \secondbest{\meanstd{0.6397}{0.0201}} & \best{\meanstd{0.9127}{0.0211}} & \meanstd{0.9578}{0.0204} & \best{\meanstd{0.5238}{0.0156}} & \secondbest{\meanstd{0.8379}{0.0146}} & \secondbest{\meanstd{0.8614}{0.0155}} \\
 MissDiff & \meanstd{0.7099}{0.0145} & \meanstd{0.9346}{0.0095} & \secondbest{\meanstd{0.9477}{0.0114}} & \meanstd{0.5748}{0.0147} & \meanstd{0.8508}{0.0128} & \best{\meanstd{0.8591}{0.0133}} \\
@@ -2068,6 +2535,8 @@ CSDI & \meanstd{0.5191}{0.0012} & \meanstd{0.7085}{0.0021} & \meanstd{0.7463}{0.
 TabCSDI & \meanstd{0.5103}{0.0017} & \secondbest{\meanstd{0.6393}{0.0019}} & \secondbest{\meanstd{0.6908}{0.0018}} & \meanstd{0.8712}{0.0195} & \meanstd{1.1371}{0.0211} & \meanstd{1.1816}{0.0209} \\
 MissDiff & \meanstd{0.5242}{0.0015} & \meanstd{0.6565}{0.0016} & \meanstd{0.7481}{0.0021} & \secondbest{\meanstd{0.8571}{0.0162}} & \secondbest{\meanstd{1.1297}{0.0184}} & \best{\meanstd{1.1575}{0.0195}} \\
 MissHDD & \best{\meanstd{0.4907}{0.0015}} & \meanstd{0.6422}{0.0018} & \best{\meanstd{0.6827}{0.0022}} & \best{\meanstd{0.8214}{0.0162}} & \best{\meanstd{1.1143}{0.0175}} & \secondbest{\meanstd{1.1713}{0.0194}} \\
+\DIFaddend
+%DIF > end revised block
 \hline
 \end{tabular}
 }
@@ -2075,6 +2544,8 @@ MissHDD & \best{\meanstd{0.4907}{0.0015}} & \meanstd{0.6422}{0.0018} & \best{\me
 
 % Downstream Incomplete
 \begin{table*}[!ht]
+%DIF > begin revised block
+\DIFaddbegin
 \centering
 \caption{Category~2 Accuracy and NMI~($\uparrow$), mean $\pm$ std.
 \best{Bold} and \secondbest{underline} mark best and second-best scores.}
@@ -2099,7 +2570,11 @@ MissDiff & \meanstd{0.8014}{0.0164} & \secondbest{\meanstd{0.0809}{0.0110}} & \m
 MissHDD & \secondbest{\meanstd{0.8274}{0.0165}} & \secondbest{\meanstd{0.0809}{0.0110}} & \best{\meanstd{0.8641}{0.0158}} & \best{\meanstd{0.1025}{0.0074}} & \best{\meanstd{0.9875}{0.0124}} & \best{\meanstd{0.1714}{0.0047}} \\
 \bottomrule
 \end{tabular}
+\DIFaddend
+%DIF > end revised block
 }
+%DIF > begin revised block
+\DIFaddbegin
 \vspace{0.6em}
 \resizebox{\textwidth}{!}{
 \begin{tabular}{lrrrrrr}
@@ -2122,10 +2597,15 @@ MissHDD & \best{\meanstd{0.8325}{0.0149}} & \best{\meanstd{0.1218}{0.0146}} & \s
 \bottomrule
 \end{tabular}
 }
+\DIFaddend
+%DIF > end revised block
 \end{table*}
+%DIF < deleted block omitted from marked-up compile-safe version
 
 \subsection{Downstream task utility}
 
+%DIF > begin revised block
+\DIFaddbegin
 We further evaluate whether imputed values preserve predictive structure.
 Tables~\ref{tab:classification_results}--\ref{tab:incomplete_data} show that
 MissHDD is frequently best or second-best on Category~1 and remains competitive
@@ -2135,7 +2615,11 @@ each unit by metric direction, and average ranks are compared using
 \texttt{critdd} with Holm adjustment. Figure~\ref{fig:cd_downstream} summarizes the pooled downstream ranking.
 MissHDD obtains the best average rank, with TabCSDI as the closest competitor;
 the metric-specific ranks follow the same trend.
+\DIFaddend
+%DIF > end revised block
 
+%DIF > begin revised block
+\DIFaddbegin
 \begin{figure}[!t]
 \centering
 \resizebox{0.92\textwidth}{!}{\input{outputs/cd_plots/downstream_pooled_cd.tex}}
@@ -2143,6 +2627,8 @@ the metric-specific ranks follow the same trend.
 bars indicate methods not separated by Holm adjustment at $\alpha=0.05$.}
 \label{fig:cd_downstream}
 \end{figure}
+\DIFaddend
+%DIF > end revised block
 
 
 
@@ -2150,6 +2636,8 @@ bars indicate methods not separated by Holm adjustment at $\alpha=0.05$.}
 
 \subsection{Sampling Time}
 
+%DIF > begin revised block
+\DIFaddbegin
 CSDI, TabCSDI, and MissDiff use stochastic DDPM-style sampling, typically with
 100 trajectories per instance. MissHDD uses a deterministic DDIM-like
 trajectory, so one pass is sufficient. Since these baselines operate on
@@ -2159,31 +2647,49 @@ standard 100-sample baseline protocol, a diagnostic one-sample baseline
 protocol, and single-trajectory MissHDD with different diffusion lengths.
 MissHDD achieves the lowest RMSE at $T{=}100$, while $T{=}50$ and $T{=}20$
 trade small error increases for lower latency.
+\DIFaddend
+%DIF > end revised block
 \begin{table}[!t]
 \centering
 \caption{
+%DIF > begin revised block
+\DIFaddbegin
 Inference time and RMSE~($\downarrow$). Baselines are reported under their
 standard 100-sample stochastic protocol and a diagnostic one-sample protocol;
 \texttt{MissHDD} uses one deterministic DDIM trajectory with varying $T$.
+\DIFaddend
+%DIF > end revised block
 }
 \label{tab:inference_summary}
 \begin{tabular}{c|l|c|c}
 \hline
+%DIF > begin revised block
+\DIFaddbegin
 \textbf{\#Samples} & \textbf{Method}
+\DIFaddend
+%DIF > end revised block
 & \textbf{Time (s) $\downarrow$}
 & \textbf{RMSE $\downarrow$} \\
 \hline
+%DIF > begin revised block
+\DIFaddbegin
 \multirow{3}{*}{100}
 & CSDI ($T{=}50$)      & 820.73 & 0.3730 \\
 & TabCSDI ($T{=}50$)   & 794.21 & 0.3319 \\
 & MissDiff ($T{=}50$)  & 765.92 & 0.3163 \\
+\DIFaddend
+%DIF > end revised block
 \hline
+%DIF > begin revised block
+\DIFaddbegin
 \multirow{3}{*}{1}
 & CSDI ($T{=}50$)      & 435.20 & 0.4212 \\
 & TabCSDI ($T{=}50$)   & 412.04 & 0.3752 \\
 & MissDiff ($T{=}50$)  & 401.61 & 0.3125 \\
 \hline
 \multirow{3}{*}{1}
+\DIFaddend
+%DIF > end revised block
 & MissHDD ($T{=}100$) & 775.31 & \textbf{0.3051} \\
 & MissHDD ($T{=}50$)  & 385.12 & 0.3167 \\
 & MissHDD ($T{=}20$)  & \textbf{154.61} & 0.3343 \\
@@ -2203,15 +2709,23 @@ standard 100-sample stochastic protocol and a diagnostic one-sample protocol;
 
 \subsection{Synthetic heterogeneous dataset for ablation}
 
+%DIF > begin revised block
+\DIFaddbegin
 To isolate component contributions, we construct a controlled synthetic
 heterogeneous dataset with $10{,}000$ samples and 30 features: 15 continuous
 and 15 categorical.
+\DIFaddend
+%DIF > end revised block
 
+%DIF > begin revised block
+\DIFaddbegin
 Both feature types are generated from a shared latent Gaussian vector, inducing
 nonlinear cross-type dependencies. Continuous features use smooth nonlinear
 transformations with Gaussian noise, while categorical features are sampled
 from softmax logits derived from the same latent vector. Missing values are
 then introduced under MCAR, MAR, and MNAR at 30\% and 50\% missingness.
+\DIFaddend
+%DIF > end revised block
 
 
 
@@ -2292,37 +2806,61 @@ then introduced under MCAR, MAR, and MNAR at 30\% and 50\% missingness.
 
 \begin{table}[!t]
 \centering
+%DIF > begin revised block
+\DIFaddbegin
 \caption{Two-channel ablation at 30\% and 70\% missingness under MCAR, MAR,
 and MNAR.
 The evaluation metric is \textbf{ImpErr}:
 for continuous-only settings it reduces to RMSE,
+\DIFaddend
+%DIF > end revised block
 and for categorical-only settings it reduces to classification error.}
 
 \label{tab:ablation_two_channel}
 \resizebox{0.80\textwidth}{!}{%
 \begin{tabular}{l l c c c}
 \toprule
+%DIF > begin revised block
+\DIFaddbegin
 Dataset & Model
 & MCAR-ImpErr $\downarrow$
 & MAR-ImpErr $\downarrow$
+\DIFaddend
+%DIF > end revised block
 & MNAR-ImpErr $\downarrow$ \\
 \midrule
+%DIF > begin revised block
+\DIFaddbegin
 \multirow{3}{*}{Adult (30\%)}
+\DIFaddend
+%DIF > end revised block
 & DDIM-only  & 0.2345 & 0.2323 & 0.2523 \\
 & LPDD-only  & 0.2574 & 0.3214 & 0.3124 \\
 & \textbf{Full} & \best{0.2202} & \best{0.1956} & \best{0.1864} \\
 \midrule
+%DIF > begin revised block
+\DIFaddbegin
 \multirow{3}{*}{Adult (70\%)}
+\DIFaddend
+%DIF > end revised block
 & DDIM-only  & 0.4312 & 0.4314 & 0.4552 \\
 & LPDD-only  & 0.4712 & 0.5027 & 0.5632 \\
 & \textbf{Full} & \best{0.4063} & \best{0.4029} & \best{0.4167} \\
 \midrule
+%DIF > begin revised block
+\DIFaddbegin
 \multirow{3}{*}{Synthetic (30\%)}
+\DIFaddend
+%DIF > end revised block
 & DDIM-only  & 0.3837 & 0.3758 & 0.4248 \\
 & LPDD-only  & 0.4521 & 0.4693 & 0.4851 \\
 & \textbf{Full} & \best{0.3459} & \best{0.3581} & \best{0.3948} \\
 \midrule
+%DIF > begin revised block
+\DIFaddbegin
 \multirow{3}{*}{Synthetic (70\%)}
+\DIFaddend
+%DIF > end revised block
 & DDIM-only  & 0.6421 & 0.7047 & 0.7623 \\
 & LPDD-only  & 0.6821 & 0.7948 & 0.8124 \\
 & \textbf{Full} & \best{0.5821} & \best{0.6471} & \best{0.7123} \\
@@ -2330,6 +2868,8 @@ Dataset & Model
 \end{tabular}}
 \end{table}
 
+%DIF > begin revised block
+\DIFaddbegin
 We compare the full model with two single-channel variants: a continuous-only
 DDIM model using numerical encodings for all features, and a discrete-only
 LPDD model that discretises continuous features into quantile bins. The full
@@ -2338,6 +2878,8 @@ variant suffers on categorical variables due to semantic drift, whereas the
 discrete-only variant loses numerical precision through discretisation. This
 supports the use of separate but coordinated generative mechanisms for
 mixed-type data.
+\DIFaddend
+%DIF > end revised block
 
 \subsection{Self-mask ratio and effectiveness}
 
@@ -2345,55 +2887,95 @@ mixed-type data.
 
 \begin{table}[!t]
 \centering
+%DIF > begin revised block
+\DIFaddbegin
 \caption{Self-masking ablation on the synthetic dataset with 50\% MCAR
 missingness. Zero-Imp and Mean-Imp use no additional masking.}
+\DIFaddend
+%DIF > end revised block
 \label{tab:ablation_self_mask}
 \resizebox{0.8\textwidth}{!}{
 \begin{tabular}{c l c c c}
 \toprule
+%DIF > begin revised block
+\DIFaddbegin
 \textbf{Self-mask Strategy}
+\DIFaddend
+%DIF > end revised block
 & Ratio
 & \textbf{MCAR-ImpErr $\downarrow$}
 & \textbf{MAR-ImpErr $\downarrow$}
 & \textbf{MNAR-ImpErr $\downarrow$} \\
 \midrule
 
+%DIF > begin revised block
+\DIFaddbegin
 \multirow{2}{*}{\textbf{No Self-mask}}
+\DIFaddend
+%DIF > end revised block
 & Zero-Imp & 0.4231 & 0.4528 & 0.4612 \\
 & Mean-Imp & 0.3545 & 0.3681 & 0.4048\\
 \midrule
 
+%DIF > begin revised block
+\DIFaddbegin
 \multirow{3}{*}{\textbf{MCAR Self-mask}}
+\DIFaddend
+%DIF > end revised block
 & 10\%  & 0.3634 & 0.3728 & 0.4124 \\
 & 30\%  & \best{0.3459} & 0.3581 & 0.3948 \\
 & 50\%  & \best{0.3459} & \best{0.3501} & \best{0.3930} \\
 \midrule
 
+%DIF > begin revised block
+\DIFaddbegin
 \multirow{3}{*}{\textbf{MAR Self-mask}}
+\DIFaddend
+%DIF > end revised block
 & 10\%  & 0.3759 & 0.3874 & 0.3852 \\
 & 30\%  & \best{0.3532} & \best{0.3524} & \best{0.3749}\\
 & 50\%  & 0.3592 & 0.3651 & 0.3824\\
 \midrule
 
+%DIF > begin revised block
+\DIFaddbegin
 \multirow{3}{*}{\textbf{MNAR Self-mask}}
+\DIFaddend
+%DIF > end revised block
 & 10\%  & 0.3682 & 0.3839 & 0.4029\\
 & 30\%  & \best{0.3524} & \best{0.3624} & 0.3849\\
 & 50\%  & 0.3759 & 0.3749 & \best{0.3833}\\
 \bottomrule
 \end{tabular}}
 \end{table}
+%DIF > begin revised block
+\DIFaddbegin
 Table~\ref{tab:ablation_self_mask} shows that auxiliary self-masking improves
 ImpErr, with 30\% giving the most stable trade-off. No self-mask mechanism
 dominates, so MCAR self-masking is a simple default.
+\DIFaddend
+%DIF > end revised block
 
 % Table \ref{tab:ablation_self_mask} presents a detailed ablation of our self-masking design.
+%DIF > begin revised block
+\DIFaddbegin
 % We compare training without any auxiliary masking ("Zero-Imp" and "Mean-Imp") against various self-masking ratios $(10\%, 30\%, 50\%)$ applied under MCAR, MAR, and MNAR masking schemes.
+\DIFaddend
+%DIF > end revised block
 
+%DIF > begin revised block
+\DIFaddbegin
 % First, models trained without self-masking exhibit the weakest performance across all three missingness mechanisms. This confirms that relying solely on the original mask causes the model to overfit specific missingness patterns and generalise poorly to unseen masks--particularly evident under MAR and MNAR, where the distribution shift between train-time and test-time masks is substantial.
+\DIFaddend
+%DIF > end revised block
 
 % Introducing self-masking consistently improves ImpErr across all settings.
 % Among all ratios, $30\%$ self-masking yields the most stable and competitive performance, striking a balance between providing sufficient pseudo-missing supervision and avoiding excessive corruption of observed features.
+%DIF > begin revised block
+\DIFaddbegin
 % Although $50\%$ masking can achieve comparable or slightly better results in some cases, we observe slower convergence and higher optimisation variance due to the reduced amount of intact conditioning information--an effect amplified on small synthetic datasets.
+\DIFaddend
+%DIF > end revised block
 % Conversely, $10\%$ masking is generally insufficient: the model sees too few pseudo-missing entries to learn robust conditional distributions.
 
 % Comparing different masking mechanisms (MCAR-, MAR-, MNAR-style self-masking), we observe no consistently dominant masking strategy across the evaluated settings. While MAR/MNAR masking occasionally offer small gains, the differences are marginal. For simplicity and robustness, MCAR-style self-masking emerges as the most reliable and computationally convenient choice, providing strong and consistent performance across all test mechanisms.
@@ -2414,9 +2996,13 @@ on RMSE under 50\% missing rate. Lower is better.
 \resizebox{\linewidth}{!}{
 \begin{tabular}{c|cc|cc|cc|cc|cc}
 \toprule
+%DIF > begin revised block
+\DIFaddbegin
 \multirow{2}{*}{$\eta$}
 & \multicolumn{2}{c|}{\textbf{Letter}}
 & \multicolumn{2}{c|}{\textbf{California}}
+\DIFaddend
+%DIF > end revised block
 & \multicolumn{2}{c|}{\textbf{Adult}}
 & \multicolumn{2}{c|}{\textbf{Banknote}}
 & \multicolumn{2}{c}{\textbf{Student}} \\
@@ -2434,21 +3020,33 @@ on RMSE under 50\% missing rate. Lower is better.
 & $T{=}25$ & $T{=}100$ \\
 \midrule
 
+%DIF > begin revised block
+\DIFaddbegin
 0.0
+\DIFaddend
+%DIF > end revised block
 & \best{0.3214} & 0.2254
 & \best{0.5014} & 0.3254
 & \best{0.5014} & 0.2843
 & \best{0.5322} & 0.3254
 & \best{0.6322} & \best{0.5109} \\
 
+%DIF > begin revised block
+\DIFaddbegin
 0.5
+\DIFaddend
+%DIF > end revised block
 & 0.6780 & \best{0.2054}
 & 0.7421 & 0.3054
 & 0.6021 & 0.3142
 & 0.8421 & 0.3017
 & 0.8421 & 0.5119 \\
 
+%DIF > begin revised block
+\DIFaddbegin
 1.0
+\DIFaddend
+%DIF > end revised block
 & 0.7510 & 0.2796
 & 0.8510 & \best{0.2996}
 & 0.6412 & \best{0.2568}
@@ -2486,7 +3084,11 @@ on RMSE under 50\% missing rate. Lower is better.
     \centering
     \includegraphics[width=\linewidth]{eval_var_T_letter.pdf}
     \vspace{-2em}
+%DIF > begin revised block
+\DIFaddbegin
     \caption{Letter}
+\DIFaddend
+%DIF > end revised block
     \label{fig:ablation_sampling_letter}
 \end{subfigure}
 \hspace{-0.5em}
@@ -2494,7 +3096,11 @@ on RMSE under 50\% missing rate. Lower is better.
     \centering
     \includegraphics[width=\linewidth]{eval_var_T_cali.pdf}
             \vspace{-2em}
+%DIF > begin revised block
+\DIFaddbegin
     \caption{California}
+\DIFaddend
+%DIF > end revised block
     \label{fig:ablation_sampling_cali}
 \end{subfigure}
 \hspace{-0.5em}
@@ -2502,7 +3108,11 @@ on RMSE under 50\% missing rate. Lower is better.
     \centering
     \includegraphics[width=\linewidth]{eval_var_T_adult.pdf}
             \vspace{-2em}
+%DIF > begin revised block
+\DIFaddbegin
     \caption{Adult}
+\DIFaddend
+%DIF > end revised block
     \label{fig:ablation_sampling_adult}
 \end{subfigure}
 %\vspace{-0.5em} % Optional: reduce space before caption
@@ -2510,7 +3120,11 @@ on RMSE under 50\% missing rate. Lower is better.
     \centering
     \includegraphics[width=\linewidth]{eval_var_T_bank.pdf}
             %\vspace{-2em}
+%DIF > begin revised block
+\DIFaddbegin
     \caption{Banknote}
+\DIFaddend
+%DIF > end revised block
     \label{fig:ablation_sampling_bank}
 \end{subfigure}
 %\hspace{-0.5em}
@@ -2531,21 +3145,35 @@ on RMSE under 50\% missing rate. Lower is better.
 \end{subfigure}
 %\vspace{-0.5em}
 %\caption{RMSE Comparing different sampling strategies under varying $\eta$ values.}
+%DIF > begin revised block
+\DIFaddbegin
 \caption{RMSE comparison with varying $\eta$ values.}
+\DIFaddend
+%DIF > end revised block
 \label{fig:ablation_sampling_combined}
 \end{figure}
 
 
 
+%DIF > begin revised block
+\DIFaddbegin
 To characterise the continuous diffusion channel, we vary DDIM stochasticity
 $\eta \in \{0.0, 0.5, 1.0\}$ and the number of reverse steps
 $T \in \{25, 50, 75, 100\}$. Here $\eta{=}0$ is deterministic and larger
 values approach stochastic DDPM sampling, with injected variance
 $
+\DIFaddend
+%DIF > end revised block
 \sigma_{\tau_i}(\eta)
+%DIF > begin revised block
+\DIFaddbegin
 = \eta
+\DIFaddend
+%DIF > end revised block
 \sqrt{\frac{1 - \alpha_{\tau_{i-1}}}{1 - \alpha_{\tau_i}}}
 \sqrt{1 - \frac{\alpha_{\tau_i}}{\alpha_{\tau_{i-1}}}},
+%DIF > begin revised block
+\DIFaddbegin
 $
 without changing model parameters. The ablation results in
 Table~\ref{tab:eta_step_table} and Figure~\ref{fig:ablation_sampling_combined}
@@ -2567,9 +3195,13 @@ top-$k$ truncation. Finally, the auxiliary self-mask is MCAR-style and may not
 fully match structured MAR or MNAR mechanisms. It provides additional
 denoising supervision rather than a model of the missingness process itself;
 adaptive feature-dependent self-masking is left for future work.
+\DIFaddend
+%DIF > end revised block
 
 \section{Conclusion}
 
+%DIF > begin revised block
+\DIFaddbegin
 We introduced \textbf{MissHDD}, a hybrid diffusion framework for incomplete
 heterogeneous tabular data. By pairing deterministic DDIM updates for
 continuous variables with LPDD-style simplex updates for categorical variables,
@@ -2581,12 +3213,18 @@ efficiency over representative baselines.
 Future work will extend MissHDD toward uncertainty-aware deterministic
 ensembles, scalable high-cardinality categorical updates, ordinal variables,
 and adaptive self-masking.
+\DIFaddend
+%DIF > end revised block
 
 
 
 \section*{Acknowledgement}
 
+%DIF > begin revised block
+\DIFaddbegin
 This article is an extended version of our short paper accepted at the ACM International Conference on Information and Knowledge Management (CIKM) 2025 \cite{missddim}. In the CIKM short paper, we presented the {\tt MissDDIM} framework for imputing only numeric/continuous missing values. In this journal article, we extended the idea to impute both categorical and discrete missing values and introduced an integrated framework, {\tt MissHDD}, to impute missing values in incomplete heterogeneous tabular data. To cover the broader scope, we made substantial changes in all sections of the paper.
+\DIFaddend
+%DIF > end revised block
 This work is supported by the Air Force Office of Scientific Research under award number FA2386-23-1-4003 and Deakin University.
 
 \section*{Declaration of generative AI and AI-assisted technologies in the manuscript}
@@ -2614,7 +3252,11 @@ During the preparation of this work, the author(s) used ChatGPT for minor langua
 
 % % Subsection text.
 
+%DIF > begin revised block
+\DIFaddbegin
 % % %% Use \subsubsection, \paragraph, \subparagraph commands to
+\DIFaddend
+%DIF > end revised block
 % % %% start 3rd, 4th and 5th level sections.
 % % %% Refer following link for more details.
 % % %% https://en.wikibooks.org/wiki/LaTeX/Document_Structure#Sectioning_commands
@@ -2623,7 +3265,11 @@ During the preparation of this work, the author(s) used ChatGPT for minor langua
 % % %% Inline mathematics is tagged between $ symbols.
 % % This is an example for the symbol $\alpha$ tagged as inline mathematics.
 
+%DIF > begin revised block
+\DIFaddbegin
 % % %% Displayed equations can be tagged using various environments.
+\DIFaddend
+%DIF > end revised block
 % % %% Single line equations can be tagged using the equation environment.
 % % \begin{equation}
 % % f(x) = (x+a)(x+b)
@@ -2685,7 +3331,11 @@ During the preparation of this work, the author(s) used ChatGPT for minor langua
 % % %% Refer following link for more details.
 % % %% https://en.wikibooks.org/wiki/LaTeX/Floats,_Figures_and_Captions
 % % \begin{figure}[t]%% placement specifier
+%DIF > begin revised block
+\DIFaddbegin
 % % %% Use \includegraphics command to insert graphic files. Place graphics files in
+\DIFaddend
+%DIF > end revised block
 % % %% working directory.
 % % \centering%% For centre alignment of image.
 % % \includegraphics{example-image-a}
@@ -2703,7 +3353,11 @@ During the preparation of this work, the author(s) used ChatGPT for minor langua
 
 % % Appendix text.
 
+%DIF > begin revised block
+\DIFaddbegin
 % % %% For citations use:
+\DIFaddend
+%DIF > end revised block
 % % %%       \cite{<label>} ==> [1]
 
 % % %%
@@ -2712,11 +3366,19 @@ During the preparation of this work, the author(s) used ChatGPT for minor langua
 % % %% If you have bib database file and want bibtex to generate the
 % % %% bibitems, please use
 % % %%
+%DIF > begin revised block
+\DIFaddbegin
 % % %%  \bibliographystyle{elsarticle-num}
+\DIFaddend
+%DIF > end revised block
 % % %%  \bibliography{<your bibdatabase>}
 
 % % %% else use the following coding to input the bibitems directly in the
 % % %% TeX file.
 
 % % %% Refer following link for more details about bibliography and citations.
+%DIF > begin revised block
+\DIFaddbegin
 % % %% https://en.wikibooks.org/wiki/LaTeX/Bibliography_Management
+\DIFaddend
+%DIF > end revised block
