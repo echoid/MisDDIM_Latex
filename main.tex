@@ -970,6 +970,19 @@ DDIM pathway.
 % states, and complements the efficient numerical imputation provided by the continuous DDIM channel.
 
 \subsection{Channel 2: Conditional Latent-Path Discrete Diffusion (LPDD) for Categorical and Discrete Variables}
+\begin{wrapfigure}{r}{0.48\textwidth}
+    \vspace{-10pt}
+    \centering
+    \includegraphics[width=0.47\textwidth]{c2.pdf}
+    \caption{
+Detail view of the categorical LPDD reverse update at timestep $t$. The
+diagram focuses on the feature-wise simplex embedding and latent-path update;
+the full conditioning context also includes observed values and the
+missingness mask, as defined in Eq.~\eqref{eq:lpdd_context}.
+    }
+    \label{fig:lpdd_overview}
+    \vspace{-10pt}
+\end{wrapfigure}
 
 
 While the continuous DDIM channel handles numerical features effectively,
@@ -984,19 +997,6 @@ and reverse transitions directly on probability simplexes, ensuring that all
 intermediate states remain valid categorical distributions and enabling
 stable structure-preserving imputation for discrete variables.
 
-\begin{wrapfigure}{r}{0.48\textwidth}
-    \vspace{-10pt}
-    \centering
-    \includegraphics[width=0.47\textwidth]{c2.pdf}
-    \caption{
-Detail view of the categorical LPDD reverse update at timestep $t$. The
-diagram focuses on the feature-wise simplex embedding and latent-path update;
-the full conditioning context also includes observed values and the
-missingness mask, as defined in Eq.~\eqref{eq:lpdd_context}.
-    }
-    \label{fig:lpdd_overview}
-    \vspace{-10pt}
-\end{wrapfigure}
 
 
 
@@ -1327,7 +1327,7 @@ type-specific gradients.
 
 \begin{figure}[t]
     \centering
-    \includegraphics[width=0.8\linewidth]{missddim.pdf}
+    \includegraphics[width=0.8\linewidth]{missddim2.pdf}
     \caption{
     Self-masking strategy used in MissHDD.
     During training, a portion of observed entries is randomly masked to create
