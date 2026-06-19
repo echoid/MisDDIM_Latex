@@ -1344,9 +1344,7 @@ only a subset of entries is observed, and preprocessing them with external
 imputers (e.g., mean filling~\cite{mean} or K-NN~\cite{knn} method) introduces bias before the diffusion
 model is learned. To avoid such artifacts, MissHDD adopts a \textbf{self-masking}
 strategy that enables both diffusion channels to learn directly from partially
-observed samples.
-
-For each training input, the original missingness pattern is preserved to
+observed samples. For each training input, the original missingness pattern is preserved to
 respect the true underlying mechanism. Additionally, a small random subset of
 the observed entries is temporarily masked to create pseudo-missing targets,
 while the remaining observed values are used as conditioning information.
@@ -1356,9 +1354,7 @@ $
 \mathbf{m}_{\mathrm{train}} = \mathbf{m} \;\lor\; \tilde{\mathbf{m}},
 $
 so that pseudo-missing entries are treated in the same way as true missing
-values during both the forward and reverse diffusion steps.
-
-This procedure provides two benefits. First, it increases the amount of
+values during both the forward and reverse diffusion steps. This procedure provides two benefits. First, it increases the amount of
 supervised signal available for learning the conditional distribution
 $p(\mathbf{x}_0^{\mathrm{mis}} \mid \mathbf{x}_0^{\mathrm{obs}})$ without
 requiring fully observed samples. Second, it regularizes both the continuous
@@ -1444,8 +1440,8 @@ independent imputations, ensuring that cross-type dependencies are preserved.
 
 \section{Experimental Setup}
 
-We evaluate \texttt{MissHDD} by imputation accuracy, downstream task utility,
-sampling efficiency, and stability.
+% We evaluate \texttt{MissHDD} by imputation accuracy, downstream task utility,
+% sampling efficiency, and stability.
 
 % Code will be available at: \url{https://github.com/echoid/MissDDIM}
 
@@ -1533,8 +1529,8 @@ Wiscon    & 699 & 9  & 0  & 2 classes  & 0.25\%  \\
 
 \subsection{Baselines}
 
-We compare \texttt{MissHDD} with statistical, deep generative, and
-diffusion-based imputers.
+% We compare \texttt{MissHDD} with statistical, deep generative, and
+% diffusion-based imputers.
 
 \paragraph{Statistical Baselines}
 We compare against classical imputers including \texttt{Mean/Mode}
@@ -1725,8 +1721,7 @@ used to evaluate reverse schedules with 100, 50, and 20 steps.
 \textbf{Discrete channel.}
 Categorical features are embedded through feature-specific embedding
 matrices and mapped to feature-wise simplex representations. The LPDD channel
-is adapted from the public Loopholing discrete diffusion implementation
-(\url{https://github.com/ahn-ml/lddm})~\cite{loopholing}. In the original
+is adapted from the public Loopholing discrete diffusion implementation~\cite{loopholing}. In the original
 implementation, the latent pathway is coupled with a DiT backbone for
 language-token generation. Our tabular conditional adaptation retains the
 latent-path update and loophole-style propagation of distributional
@@ -1953,9 +1948,7 @@ We evaluate imputation quality under \textbf{MCAR}, \textbf{MAR}, and
 Figures~\ref{fig:rmse_mcar}, \ref{fig:rmse_mar}, and~\ref{fig:rmse_mnar}
 report ImpErr on fully observed datasets with synthetic masks, while
 Figure~\ref{fig:miss_mechanism_boxplots} summarizes the aggregated
-distributions.
-
-ImpErr increases with missingness severity, especially under MAR and MNAR.
+distributions. ImpErr increases with missingness severity, especially under MAR and MNAR.
 Classical and latent-variable baselines degrade more sharply, while diffusion
 baselines remain sensitive to categorical features. \texttt{MissHDD} achieves
 lower ImpErr across mechanisms and rates, with lower median error and smaller
@@ -2136,16 +2129,10 @@ MissHDD & \best{\meanstd{0.8325}{0.0149}} & \best{\meanstd{0.1218}{0.0146}} & \s
 We further evaluate whether imputed values preserve predictive structure.
 Tables~\ref{tab:classification_results}--\ref{tab:incomplete_data} show that
 MissHDD is frequently best or second-best on Category~1 and remains competitive
-on the smaller naturally incomplete datasets.
-
-\subsection{Statistical comparison}
-
-We also perform a pooled rank-based comparison over all downstream evaluation
-units: 12 F1, 12 MAE, six ACC, and six NMI units. Methods are ranked within
+on the smaller naturally incomplete datasets. We also perform a pooled rank-based comparison over all downstream evaluation
+units. Methods are ranked within
 each unit by metric direction, and average ranks are compared using
-\texttt{critdd} with Holm adjustment.
-
-Figure~\ref{fig:cd_downstream} summarizes the pooled downstream ranking.
+\texttt{critdd} with Holm adjustment. Figure~\ref{fig:cd_downstream} summarizes the pooled downstream ranking.
 MissHDD obtains the best average rank, with TabCSDI as the closest competitor;
 the metric-specific ranks follow the same trend.
 
