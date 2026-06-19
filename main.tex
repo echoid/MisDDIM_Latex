@@ -991,7 +991,10 @@ stable structure-preserving imputation for discrete variables.
     \centering
     \includegraphics[width=0.47\textwidth]{c2.pdf} % <-- replace with your file c2.pdf
     \caption{
-Overview of the LPDD reverse update at timestep $t$.
+Detail view of the categorical LPDD reverse update at timestep $t$. The
+diagram focuses on the feature-wise simplex embedding and latent-path update;
+the full conditioning context also includes observed values and the
+missingness mask, as defined in Eq.~\eqref{eq:lpdd_context}.
     }
     \label{fig:lpdd_overview}
     \vspace{-10pt}
@@ -1038,15 +1041,18 @@ combined to form a unified contextual input
 \begin{equation}
 \mathbf{z}_t =
 \mathrm{Concat}\!\left(
+\mathbf{x}^{\mathrm{obs}},
 \{\mathbf{e}^{(j)}_t\}_{j\in\mathcal{I}_{\mathrm{cat}}},
 \mathbf{x}^{\mathrm{cont}}_t,
 \mathbf{m},
 \tau(t)
 \right),
+\label{eq:lpdd_context}
 \end{equation}
 
-where $\mathbf{m}$ denotes the observed/missing indicator used by both
-channels. The context $\mathbf{z}_t$ is passed through a shared feature
+where $\mathbf{x}^{\mathrm{obs}}$ denotes the observed entries used as
+conditioning anchors and $\mathbf{m}$ denotes the observed/missing indicator
+used by both channels. The context $\mathbf{z}_t$ is passed through a shared feature
 encoder to produce a latent hidden state:
 
 \begin{equation}
