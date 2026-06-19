@@ -603,15 +603,19 @@ the MissHDD framework.
 
 \begin{figure*}[t]
     \centering
-\includegraphics[width=\linewidth, height=0.24\textheight, keepaspectratio]{hdd.pdf}
+\includegraphics[width=\linewidth, height=0.24\textheight, keepaspectratio]{hdd2.pdf}
 \caption{
-Overview of the \textbf{MissHDD} framework. Continuous and categorical
-features are processed through two coordinated diffusion channels: a
-conditional deterministic DDIM for continuous variables (Channel~1) and a
-latent-path discrete diffusion model for categorical and other finite-state
-variables (Channel~2). A self-masking strategy enables training
-directly on incomplete data, and the outputs from both channels are merged to
-produce the final imputed table.}
+Overview of the \textbf{MissHDD} framework. During training, self-masking
+creates pseudo-missing targets from observed entries, and the continuous DDIM
+channel and categorical LPDD channel are jointly optimized through a shared
+contextual encoder. The shared context combines observed values, the
+missingness mask, current continuous states, categorical simplex embeddings,
+and timestep information, so both losses update the common representation.
+During inference, missing continuous entries are initialized from a fixed
+Gaussian latent state and missing categorical entries from uniform simplexes.
+The two channels then follow a deterministic reverse trajectory in which the
+current continuous and categorical estimates are recurrently fed back into the
+shared encoder before final decoding and merging with observed entries.}
     \label{fig:MissHDD_overview}
 \end{figure*}
 
