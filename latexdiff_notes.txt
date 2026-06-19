@@ -1,0 +1,6 @@
+Generated files:
+- main_marked.tex: compile-safe marked-up manuscript. Revised/added blocks are highlighted in blue.
+- If a full latexdiff installation is available, the standard command is:
+  latexdiff main_old.tex main.tex > main_latexdiff.tex
+
+This local environment does not have latexdiff or pdflatex installed, so the PDF should be built in Overleaf or a local TeX installation.
